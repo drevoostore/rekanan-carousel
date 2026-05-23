@@ -132,7 +132,7 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
       updateDots();
       sendHeight();
     }
-    let currentPosition = 0; let cardWidth = 0; let visibleCards = 4; let totalCards = 16; let maxPosition = Math.max(0, totalCards - visibleCards); let autoScrollInterval = null; let isDragging = false; let startX = 0; let currentTranslate = 0; let prevTranslate = 0;
+    let currentPosition = 0; let cardWidth = 0; let visibleCards = 4; let totalCards = 16; let maxPosition = Math.max(0, totalCards - visibleCards); let autoScrollInterval = null; let isDragging = false; let startX = 0; let currentTranslate = 0; let prevTranslate = 0; let isSearchMode = false;
     const track = document.getElementById('carouselTrack'); const wrapper = document.getElementById('carouselWrapper'); const container = document.querySelector('.container'); const searchInput = document.getElementById('searchInput'); const noResults = document.getElementById('noResults');
     let allCards = Array.from(track.children);
     function getWrapperWidth() { return wrapper.clientWidth; }
@@ -168,6 +168,7 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
         track.style.flexWrap = 'nowrap';
         track.style.padding = '0 55px';
         noResults.style.display = 'none';
+        isSearchMode = false;
         renderCarousel();
         resetAutoScroll();
         return;
@@ -194,6 +195,7 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
         track.style.padding = '0';
         track.style.transform = 'translateX(0px)';
         currentPosition = 0;
+        isSearchMode = true;
         renderCarousel(matched);
         // Stop auto-scroll during search
         if (autoScrollInterval) clearInterval(autoScrollInterval);
@@ -211,8 +213,8 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
     console.log('After renderCarousel, calling resetAutoScroll...');
     resetAutoScroll();
     console.log('After resetAutoScroll, setting up mouse listeners...');
-    wrapper.addEventListener('mouseenter', () => { if (autoScrollInterval) clearInterval(autoScrollInterval); console.log('AutoScroll paused (mouseenter)'); });
-    wrapper.addEventListener('mouseleave', () => { resetAutoScroll(); console.log('AutoScroll resumed (mouseleave)'); });
+    wrapper.addEventListener('mouseenter', () => { if (!isSearchMode && autoScrollInterval) clearInterval(autoScrollInterval); console.log('AutoScroll paused (mouseenter)'); });
+    wrapper.addEventListener('mouseleave', () => { if (!isSearchMode) resetAutoScroll(); console.log('AutoScroll resumed (mouseleave)'); });
   </script>
   <script>
     (function() {
