@@ -174,37 +174,47 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
         // Restore carousel mode when clearing search
         isSearchMode = false;
         noResults.style.display = 'none';
-        wrapper.style.overflow = 'hidden';
         document.getElementById('carouselDots').style.display = 'flex';
         document.querySelectorAll('.carousel-nav').forEach(btn => btn.style.display = 'flex');
-        // Clear track first
+        // Remove all cards first
         track.innerHTML = '';
-        // Force complete style reset using cssText
-        setTimeout(() => {
-          track.style.cssText = 'display: flex; gap: 15px; padding: 0 55px; transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); overflow: hidden; flex-wrap: nowrap; flex-direction: row; width: auto; transform: translateX(0px)';
-          // Force re-render with fresh 16 random cards
-          const shuffled = allRekanans.slice().sort(() => Math.random() - 0.5);
-          const selected = shuffled.slice(0, CARDS_PER_VISIT);
-          track.innerHTML = selected.map(r => {
-            const kotaTitle = r.kota.charAt(0).toUpperCase() + r.kota.slice(1);
-            const igLink = r.instagram.replace(/^@/, '');
-            return `<div class="rekanan-card" data-kota="${r.kota}" data-nama="${r.nama}"><div class="card-content"><span class="city-badge">📍 ${kotaTitle}</span><strong>${r.nama}</strong><div class="info-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><circle cx="12" cy="12" r="5"></circle><circle cx="17" cy="7" r="1.5" fill="currentColor" stroke="none"></circle></svg><a href="https://instagram.com/${igLink}" target="_blank">${r.instagram}</a></div><div class="info-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg><span>${r.telp}</span></div></div><div class="address">📍 ${r.alamat}, ${r.kota}</div></div>`;
-          }).join('');
-          allCards = Array.from(track.children);
-          totalCards = selected.length;
-          currentPosition = 0;
-          prevTranslate = 0;
-          currentTranslate = 0;
-          // Force recalculate everything
-          setCardSizes();
-          void wrapper.offsetWidth;
-          void track.offsetWidth;
-          updateCarousel();
-          initDots();
-          updateDots();
-          sendHeight();
-          resetAutoScroll();
-        }, 10);
+        // Reset wrapper to carousel mode
+        wrapper.style.overflow = 'hidden';
+        wrapper.style.pointerEvents = 'auto';
+        // Force browser reflow by reading offsetWidth
+        void wrapper.offsetWidth;
+        // Set carousel styles
+        track.style.display = 'flex';
+        track.style.flexWrap = 'nowrap';
+        track.style.flexDirection = 'row';
+        track.style.gap = '15px';
+        track.style.padding = '0 55px';
+        track.style.overflow = 'hidden';
+        track.style.transform = 'translateX(0px)';
+        track.style.transition = 'transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
+        // Force another reflow
+        void track.offsetWidth;
+        // Now render fresh 16 cards
+        const shuffled = allRekanans.slice().sort(() => Math.random() - 0.5);
+        const selected = shuffled.slice(0, CARDS_PER_VISIT);
+        track.innerHTML = selected.map(r => {
+          const kotaTitle = r.kota.charAt(0).toUpperCase() + r.kota.slice(1);
+          const igLink = r.instagram.replace(/^@/, '');
+          return `<div class="rekanan-card" data-kota="${r.kota}" data-nama="${r.nama}"><div class="card-content"><span class="city-badge">📍 ${kotaTitle}</span><strong>${r.nama}</strong><div class="info-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><circle cx="12" cy="12" r="5"></circle><circle cx="17" cy="7" r="1.5" fill="currentColor" stroke="none"></circle></svg><a href="https://instagram.com/${igLink}" target="_blank">${r.instagram}</a></div><div class="info-row"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg><span>${r.telp}</span></div></div><div class="address">📍 ${r.alamat}, ${r.kota}</div></div>`;
+        }).join('');
+        allCards = Array.from(track.children);
+        totalCards = selected.length;
+        currentPosition = 0;
+        prevTranslate = 0;
+        currentTranslate = 0;
+        // Recalculate and update
+        setCardSizes();
+        void track.offsetWidth;
+        updateCarousel();
+        initDots();
+        updateDots();
+        sendHeight();
+        resetAutoScroll();
         return;
       }
       // Search across ALL rekanans (not just the 16 random displayed)
@@ -222,9 +232,17 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
         isSearchMode = true;
         noResults.style.display = 'none';
         wrapper.style.overflow = 'visible';
+        wrapper.style.pointerEvents = 'auto';
         document.getElementById('carouselDots').style.display = 'none';
         document.querySelectorAll('.carousel-nav').forEach(btn => btn.style.display = 'none');
-        track.style.cssText = 'display: flex; gap: 15px; padding: 0; overflow: visible; flex-wrap: wrap; flex-direction: row; width: auto; transform: translateX(0px)';
+        track.style.display = 'flex';
+        track.style.flexWrap = 'wrap';
+        track.style.flexDirection = 'row';
+        track.style.gap = '15px';
+        track.style.padding = '0';
+        track.style.overflow = 'visible';
+        track.style.transform = 'translateX(0px)';
+        track.style.transition = 'none';
         currentPosition = 0;
         renderCarousel(matched);
         // Stop auto-scroll during search
