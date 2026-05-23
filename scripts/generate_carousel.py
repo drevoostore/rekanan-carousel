@@ -3,7 +3,7 @@
 Generate carousel searchbox HTML from Google Sheets CSV
 Output: outputs/carousel_dev.html  (on dev1)
         outputs/carousel_prod.html (on dev2 -- EDIT line 18 below)
-Features: Horizontal carousel, randomized order, auto-scroll
+Features: Horizontal carousel, randomized order, auto-scroll, SEARCH by nama/kota
 
 HOW TO SWITCH TO PROD ON DEV2:
   Edit line 18 below:
@@ -50,6 +50,13 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
     .rekanan-card a { color: #E1306C; text-decoration: none; font-weight: 500; transition: color 0.3s ease; }
     .rekanan-card a:hover { color: #C13584; text-decoration: underline; }
     .rekanan-card .address { color: #666; font-size: 13px; line-height: 1.5; margin-top: 12px; padding-top: 12px; border-top: 1px solid #e8e8e8; }
+    .search-box-wrapper { max-width: 500px; margin: 0 auto 30px; position: relative; }
+    .search-box-wrapper svg { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: #999; pointer-events: none; }
+    .search-box { width: 100%; padding: 14px 18px 14px 46px; font-size: 15px; border: 2px solid #e8e8ef; border-radius: 30px; outline: none; transition: all 0.3s ease; font-family: inherit; background: #fff; }
+    .search-box:focus { border-color: #4a90d9; box-shadow: 0 4px 12px rgba(74, 144, 217, 0.15); }
+    .search-box::placeholder { color: #aaa; }
+    .no-results { text-align: center; padding: 60px 20px; color: #888; font-size: 16px; display: none; }
+    .no-results svg { width: 48px; height: 48px; margin-bottom: 16px; color: #ccc; }
     .carousel-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; background: #fff; border: 2px solid #e8e8ef; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; z-index: 10; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
     .carousel-nav:hover { background: #4a90d9; border-color: #4a90d9; color: #fff; }
     .carousel-nav.prev { left: 10px; } .carousel-nav.next { right: 10px; }
@@ -59,11 +66,23 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
     .carousel-dot.active { background: #4a90d9; width: 30px; border-radius: 5px; }
     .carousel-dot:hover { background: #357abd; }
     @media (max-width: 768px) { .rekanan-card { flex: 0 0 280px; padding: 20px; } .rekanan-card strong { font-size: 16px; } .carousel-nav { width: 36px; height: 36px; } .carousel-nav svg { width: 16px; height: 16px; } }
-    @media (max-width: 480px) { .rekanan-card { flex: 0 0 260px; } .header h1 { font-size: 22px; } }
+    @media (max-width: 480px) { .rekanan-card { flex: 0 0 260px; } .header h1 { font-size: 22px; } .search-box { padding: 12px 16px 12px 40px; font-size: 14px; } }
   </style>
 </head>
 <body>
   <div class="container">
+    <div class="header">
+      <h1>Rekanan Directory</h1>
+      <p>Cari rekanan kami berdasarkan nama atau kota</p>
+    </div>
+    <div class="search-box-wrapper">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <input type="text" class="search-box" id="searchInput" placeholder="Cari nama rekanan atau kota..." oninput="filterCards(this.value)">
+    </div>
+    <div class="no-results" id="noResults">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+      <div>Tidak ada rekanan ditemukan</div>
+    </div>
     <div class="carousel-wrapper" id="carouselWrapper">
       <button class="carousel-nav prev" onclick="moveCarousel(-1)" aria-label="Previous"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
       <div class="carousel-track" id="carouselTrack">
@@ -75,13 +94,44 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
   </div>
   <script>
     let currentPosition = 0; let cardWidth = 370; let visibleCards = Math.floor(window.innerWidth / cardWidth); let totalCards = {total_cards}; let maxPosition = Math.max(0, totalCards - visibleCards); let autoScrollInterval = null; let isDragging = false; let startX = 0; let currentTranslate = 0; let prevTranslate = 0;
-    const track = document.getElementById('carouselTrack'); const wrapper = document.getElementById('carouselWrapper');
-    function initDots() { const dotsContainer = document.getElementById('carouselDots'); const totalDots = Math.ceil(totalCards / visibleCards); for (let i = 0; i < totalDots; i++) { const dot = document.createElement('div'); dot.className = 'carousel-dot' + (i === 0 ? ' active' : ''); dot.onclick = () => goToSlide(i); dotsContainer.appendChild(dot); } }
+    const track = document.getElementById('carouselTrack'); const wrapper = document.getElementById('carouselWrapper'); const searchInput = document.getElementById('searchInput'); const noResults = document.getElementById('noResults');
+    let allCards = Array.from(track.children);
+    function initDots() { const dotsContainer = document.getElementById('carouselDots'); dotsContainer.innerHTML = ''; const totalDots = Math.ceil(totalCards / visibleCards); for (let i = 0; i < totalDots; i++) { const dot = document.createElement('div'); dot.className = 'carousel-dot' + (i === 0 ? ' active' : ''); dot.onclick = () => goToSlide(i); dotsContainer.appendChild(dot); } }
     function updateDots() { const dots = document.querySelectorAll('.carousel-dot'); const activeDot = Math.floor(currentPosition / visibleCards); dots.forEach((dot, i) => { dot.classList.toggle('active', i === activeDot); }); }
     function moveCarousel(direction) { const newPosition = currentPosition + (direction * visibleCards); currentPosition = Math.max(0, Math.min(newPosition, maxPosition)); updateCarousel(); resetAutoScroll(); }
     function goToSlide(slideIndex) { currentPosition = slideIndex * visibleCards; currentPosition = Math.min(currentPosition, maxPosition); updateCarousel(); resetAutoScroll(); }
-    function updateCarousel() { track.style.transform = `translateX(-${currentPosition * cardWidth}px)`; updateDots(); }
+    function updateCarousel() { track.style.transform = `translateX(-${currentPosition * cardWidth}px)`; updateDots(); sendHeight(); }
     function resetAutoScroll() { if (autoScrollInterval) clearInterval(autoScrollInterval); autoScrollInterval = setInterval(() => { if (currentPosition >= maxPosition) currentPosition = 0; else currentPosition++; updateCarousel(); }, 3000); }
+    function filterCards(query) {
+      const q = query.toLowerCase().trim();
+      let visibleCount = 0;
+      allCards.forEach(card => {
+        const kota = (card.dataset.kota || '').toLowerCase();
+        const nama = (card.dataset.nama || '').toLowerCase();
+        const match = !q || kota.includes(q) || nama.includes(q);
+        card.style.display = match ? '' : 'none';
+        if (match) visibleCount++;
+      });
+      if (visibleCount === 0) {
+        wrapper.style.display = 'none';
+        document.getElementById('carouselDots').style.display = 'none';
+        noResults.style.display = 'block';
+      } else {
+        wrapper.style.display = '';
+        document.getElementById('carouselDots').style.display = '';
+        noResults.style.display = 'none';
+        totalCards = visibleCount;
+        currentPosition = 0;
+        prevTranslate = 0;
+        currentTranslate = 0;
+        visibleCards = Math.floor(window.innerWidth / cardWidth);
+        maxPosition = Math.max(0, totalCards - visibleCards);
+        track.style.transform = 'translateX(0px)';
+        initDots();
+        updateDots();
+        sendHeight();
+      }
+    }
     track.addEventListener('mousedown', startDrag); track.addEventListener('touchstart', startDrag); track.addEventListener('mousemove', drag); track.addEventListener('touchmove', drag); track.addEventListener('mouseup', endDrag); track.addEventListener('touchend', endDrag); track.addEventListener('mouseleave', endDrag);
     function startDrag(e) { isDragging = true; startX = getPositionX(e); track.classList.add('dragging'); if (autoScrollInterval) clearInterval(autoScrollInterval); }
     function drag(e) { if (!isDragging) return; const currentX = getPositionX(e); const diff = currentX - startX; currentTranslate = prevTranslate + diff; track.style.transform = `translateX(${currentTranslate}px)`; }
@@ -176,7 +226,7 @@ def main():
     print(f"✅ Generated: {OUTPUT_FILE}")
     print(f"   Total cards: {total_cards}")
     print(f"   Layout: Horizontal carousel (randomized)")
-    print(f"   Features: Auto-scroll, drag/swipe, navigation buttons")
+    print(f"   Features: Auto-scroll, drag/swipe, navigation buttons, SEARCH by nama/kota")
     return 0
 
 
