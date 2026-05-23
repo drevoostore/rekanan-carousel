@@ -36,13 +36,13 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
     .header h1 { font-size: 28px; color: #2c3e50; margin-bottom: 8px; }
     .header p { color: #666; font-size: 14px; }
     .carousel-wrapper { position: relative; overflow: hidden; padding: 20px 0; }
-    .carousel-track { display: flex; gap: 12px; padding: 0 50px; transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); will-change: transform; }
+    .carousel-track { display: flex; gap: 15px; padding: 0 55px; transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); will-change: transform; }
     .carousel-track.dragging { transition: none; }
-    .rekanan-card { flex: 0 0 var(--card-width, 260px); min-height: 260px; display: flex; flex-direction: column; background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); border: 2px solid #e8e8e8; border-radius: 12px; padding: 16px; transition: all 0.3s ease; cursor: pointer; position: relative; overflow: hidden; }
+    .rekanan-card { flex: 0 0 var(--card-width, 330px); min-height: 280px; display: flex; flex-direction: column; background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); border: 2px solid #e8e8e8; border-radius: 12px; padding: 20px; transition: all 0.3s ease; cursor: pointer; position: relative; overflow: hidden; }
     .rekanan-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: linear-gradient(180deg, #4a90d9 0%, #357abd 100%); opacity: 0; transition: opacity 0.3s ease; }
     .rekanan-card:hover { background: linear-gradient(135deg, #e8f4f8 0%, #f0f7fb 100%); box-shadow: 0 8px 24px rgba(74, 144, 217, 0.2); transform: translateY(-4px); border-color: #4a90d9; }
     .rekanan-card:hover::before { opacity: 1; }
-    .rekanan-card strong { display: block; margin-bottom: 8px; color: #2c3e50; font-size: 14px; font-weight: 700; line-height: 1.3; }
+    .rekanan-card strong { display: block; margin-bottom: 10px; color: #2c3e50; font-size: 15px; font-weight: 700; line-height: 1.3; }
     .rekanan-card .card-content { flex: 1 1 auto; }
     .rekanan-card .city-badge { display: inline-block; padding: 4px 12px; background: linear-gradient(135deg, #4a90d9 0%, #357abd 100%); color: #fff; border-radius: 16px; font-size: 12px; font-weight: 600; margin-bottom: 12px; }
     .rekanan-card .info-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 14px; }
@@ -89,18 +89,17 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
     <div class="carousel-dots" id="carouselDots"></div>
   </div>
   <script>
-    let currentPosition = 0; let cardWidth = 0; let visibleCards = 5; let totalCards = {total_cards}; let maxPosition = Math.max(0, totalCards - visibleCards); let autoScrollInterval = null; let isDragging = false; let startX = 0; let currentTranslate = 0; let prevTranslate = 0;
+    let currentPosition = 0; let cardWidth = 0; let visibleCards = 4; let totalCards = {total_cards}; let maxPosition = Math.max(0, totalCards - visibleCards); let autoScrollInterval = null; let isDragging = false; let startX = 0; let currentTranslate = 0; let prevTranslate = 0;
     const track = document.getElementById('carouselTrack'); const wrapper = document.getElementById('carouselWrapper'); const container = document.querySelector('.container'); const searchInput = document.getElementById('searchInput'); const noResults = document.getElementById('noResults');
     let allCards = Array.from(track.children);
     function getWrapperWidth() { return wrapper.clientWidth; }
     function setCardSizes() {
       const ww = getWrapperWidth();
-      let desired = 5;
-      if (ww < 400) desired = 2;
-      else if (ww < 600) desired = 3;
-      else if (ww < 900) desired = 4;
-      const gap = 12;
-      const navSpace = 100;
+      let desired = 4;
+      if (ww < 500) desired = 2;
+      else if (ww < 800) desired = 3;
+      const gap = 15;
+      const navSpace = 110;
       const available = ww - navSpace;
       cardWidth = Math.floor((available - (gap * (desired - 1))) / desired);
       visibleCards = desired;
@@ -111,7 +110,7 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
     function updateDots() { const dots = document.querySelectorAll('.carousel-dot'); const activeDot = Math.floor(currentPosition / visibleCards); dots.forEach((dot, i) => { dot.classList.toggle('active', i === activeDot); }); }
     function moveCarousel(direction) { const newPosition = currentPosition + (direction * visibleCards); currentPosition = Math.max(0, Math.min(newPosition, maxPosition)); updateCarousel(); resetAutoScroll(); }
     function goToSlide(slideIndex) { currentPosition = slideIndex * visibleCards; currentPosition = Math.min(currentPosition, maxPosition); updateCarousel(); resetAutoScroll(); }
-    function updateCarousel() { track.style.transform = `translateX(-${currentPosition * (cardWidth + 12)}px)`; updateDots(); sendHeight(); }
+    function updateCarousel() { track.style.transform = `translateX(-${currentPosition * (cardWidth + 15)}px)`; updateDots(); sendHeight(); }
     function resetAutoScroll() { if (autoScrollInterval) clearInterval(autoScrollInterval); autoScrollInterval = setInterval(() => { if (currentPosition >= maxPosition) currentPosition = 0; else currentPosition++; updateCarousel(); }, 3000); }
     function filterCards(query) {
       const q = query.toLowerCase().trim();
@@ -145,7 +144,7 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
     track.addEventListener('mousedown', startDrag); track.addEventListener('touchstart', startDrag); track.addEventListener('mousemove', drag); track.addEventListener('touchmove', drag); track.addEventListener('mouseup', endDrag); track.addEventListener('touchend', endDrag); track.addEventListener('mouseleave', endDrag);
     function startDrag(e) { isDragging = true; startX = getPositionX(e); track.classList.add('dragging'); if (autoScrollInterval) clearInterval(autoScrollInterval); }
     function drag(e) { if (!isDragging) return; const currentX = getPositionX(e); const diff = currentX - startX; currentTranslate = prevTranslate + diff; track.style.transform = `translateX(${currentTranslate}px)`; }
-    function endDrag() { if (!isDragging) return; isDragging = false; track.classList.remove('dragging'); const movedBy = currentTranslate - prevTranslate; const slideWidth = cardWidth + 12; if (movedBy < -slideWidth/2) currentPosition += visibleCards; if (movedBy > slideWidth/2) currentPosition -= visibleCards; currentPosition = Math.max(0, Math.min(currentPosition, maxPosition)); prevTranslate = -currentPosition * slideWidth; currentTranslate = prevTranslate; updateCarousel(); resetAutoScroll(); }
+    function endDrag() { if (!isDragging) return; isDragging = false; track.classList.remove('dragging'); const movedBy = currentTranslate - prevTranslate; const slideWidth = cardWidth + 15; if (movedBy < -slideWidth/2) currentPosition += visibleCards; if (movedBy > slideWidth/2) currentPosition -= visibleCards; currentPosition = Math.max(0, Math.min(currentPosition, maxPosition)); prevTranslate = -currentPosition * slideWidth; currentTranslate = prevTranslate; updateCarousel(); resetAutoScroll(); }
     function getPositionX(e) { return e.type.includes('mouse') ? e.pageX : e.touches[0].clientX; }
     window.addEventListener('resize', () => { setCardSizes(); updateCarousel(); });
     setCardSizes(); initDots(); resetAutoScroll();
