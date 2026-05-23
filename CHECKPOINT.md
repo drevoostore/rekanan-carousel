@@ -236,3 +236,70 @@ python3 scripts/generate_carousel.py   # fetches CSV, outputs carousel_dev.html
 **Session Date:** May 23, 2026
 **Status:** ✅ All bugs fixed — Autorotate & Search working properly
 **Next:** Customer testing → Prod deployment on dev2 (when approved)
+
+---
+
+## Production Deployment Summary
+
+### Deployment Date: May 23, 2026
+
+**Production Server (dev2):** 192.168.22.234
+**Cloudflare Pages URL:** `https://rekanan-carousel.pages.dev/carousel_prod.html`
+
+### What Was Deployed:
+- ✅ `carousel_prod.html` with 493 rekanans
+- ✅ 16 random cards per visit (JS-shuffled)
+- ✅ Autorotate: 2 seconds per card
+- ✅ Search: All results in grid layout (no carousel)
+- ✅ No autorotate during search mode
+- ✅ Mobile responsive (1-4 cards based on screen width)
+- ✅ Auto-height iframe for PageFly
+
+### Auto-Update Setup (Google Sheets → Production)
+
+**Cron Job on dev2:**
+```bash
+0 2 * * * cd /home/dev/rekanan-carousel && python3 scripts/generate_carousel.py >> /var/log/carousel_update.log 2>&1
+```
+
+**Frequency:** Daily at 02:00 AM
+**Log File:** `/var/log/carousel_update.log`
+
+### Pending: Git Push Automation
+
+**Issue:** Cron job updates file on dev2 but doesn't push to GitHub (no auto-deploy to Cloudflare Pages)
+
+**Solution:** Deploy key generated for automation
+
+**Deploy Key (Public):**
+```
+ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIHpIhqobgxxXuvACtGWkrO0ptt/5w3Z5of7y2OPst4bk rekanan-carousel-automation
+```
+
+**To Complete Setup:**
+1. Add deploy key to GitHub: https://github.com/drevoostore/rekanan-carousel/settings/keys/new
+   - Title: `dev2-automation`
+   - ✅ Check "Allow write access"
+2. On dev2, configure git:
+   ```bash
+   cd /home/dev/rekanan-carousel
+   git config core.sshCommand 'ssh -i ~/.ssh/rekanan-carousel-deploy -F /dev/null'
+   ```
+3. Update cron job:
+   ```bash
+   crontab -e
+   # Replace with:
+   0 2 * * * cd /home/dev/rekanan-carousel && GIT_SSH_COMMAND="ssh -i ~/.ssh/rekanan-carousel-deploy -F /dev/null" python3 scripts/generate_carousel.py && git add outputs/carousel_prod.html && git commit -m "auto: update prod $(date +\%Y-\%m-\%d)" && git push origin main >> /var/log/carousel_update.log 2>&1
+   ```
+
+**Alternative (Manual):**
+- Cron updates file on dev2 daily
+- Manually pull from GitHub on dev2 when needed
+- Or use Cloudflare Pages direct deploy from folder
+
+**Documentation:**
+- `docs/DEPLOYMENT_CHECKLIST.md` — Full deployment checklist
+- `docs/DEPLOY_TO_DEV2.md` — Dev2 deployment guide
+- `docs/AUTO_UPDATE_SETUP.md` — Auto-update configuration
+
+---
