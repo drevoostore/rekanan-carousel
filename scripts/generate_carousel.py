@@ -31,7 +31,7 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
   <title>Rekanan Directory - Carousel</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; background: #fff; padding: 40px 20px; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; background: #fff; padding: 20px 20px 40px; }
     .container { max-width: 1400px; margin: 0 auto; }
     .header { text-align: center; margin-bottom: 30px; }
     .header h1 { font-size: 28px; color: #2c3e50; margin-bottom: 8px; }
@@ -71,10 +71,6 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
 </head>
 <body>
   <div class="container">
-    <div class="header">
-      <h1>Rekanan Directory</h1>
-      <p>Cari rekanan kami berdasarkan nama atau kota</p>
-    </div>
     <div class="search-box-wrapper">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
       <input type="text" class="search-box" id="searchInput" placeholder="Cari nama rekanan atau kota..." oninput="filterCards(this.value)">
