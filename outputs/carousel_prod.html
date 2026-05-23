@@ -155,24 +155,27 @@
         noResults.style.display = 'none';
         document.getElementById('carouselDots').style.display = 'flex';
         document.querySelectorAll('.carousel-nav').forEach(btn => btn.style.display = 'flex');
-        // Remove all cards first
-        track.innerHTML = '';
-        // Reset wrapper to carousel mode
+        // Reset wrapper
         wrapper.style.overflow = 'hidden';
         wrapper.style.pointerEvents = 'auto';
-        // Force browser reflow by reading offsetWidth
-        void wrapper.offsetWidth;
-        // Set carousel styles
+        // Reset track styles FIRST
+        track.style.transition = 'none';
+        track.style.transform = 'translateX(0px)';
         track.style.display = 'flex';
         track.style.flexWrap = 'nowrap';
         track.style.flexDirection = 'row';
         track.style.gap = '15px';
         track.style.padding = '0 55px';
         track.style.overflow = 'hidden';
-        track.style.transform = 'translateX(0px)';
-        track.style.transition = 'transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
-        // Force another reflow
+        // Force reflow
         void track.offsetWidth;
+        // Clear cards
+        track.innerHTML = '';
+        // Calculate card sizes BEFORE rendering
+        totalCards = CARDS_PER_VISIT;
+        setCardSizes();
+        // Force CSS variable to apply
+        void cardWidth;
         // Now render fresh 16 cards
         const shuffled = allRekanans.slice().sort(() => Math.random() - 0.5);
         const selected = shuffled.slice(0, CARDS_PER_VISIT);
@@ -186,9 +189,9 @@
         currentPosition = 0;
         prevTranslate = 0;
         currentTranslate = 0;
-        // Recalculate and update
-        setCardSizes();
+        // Final reflow and update
         void track.offsetWidth;
+        track.style.transition = 'transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
         updateCarousel();
         initDots();
         updateDots();
@@ -214,14 +217,14 @@
         wrapper.style.pointerEvents = 'auto';
         document.getElementById('carouselDots').style.display = 'none';
         document.querySelectorAll('.carousel-nav').forEach(btn => btn.style.display = 'none');
+        track.style.transition = 'none';
+        track.style.transform = 'translateX(0px)';
         track.style.display = 'flex';
         track.style.flexWrap = 'wrap';
         track.style.flexDirection = 'row';
         track.style.gap = '15px';
         track.style.padding = '0';
         track.style.overflow = 'visible';
-        track.style.transform = 'translateX(0px)';
-        track.style.transition = 'none';
         currentPosition = 0;
         renderCarousel(matched);
         // Stop auto-scroll during search
