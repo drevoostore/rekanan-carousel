@@ -157,7 +157,7 @@
         track.style.display = 'flex';
         track.style.flexWrap = 'nowrap';
         track.style.padding = '0 55px';
-        track.style.overflowX = 'auto';
+        track.style.overflowX = 'visible';
         noResults.style.display = 'none';
         isSearchMode = false;
         renderCarousel();
@@ -175,16 +175,16 @@
         document.getElementById('carouselDots').style.display = 'none';
         noResults.style.display = 'block';
       } else {
-        // Show ALL results in scrollable grid (horizontal scroll with autorotate)
+        // Show ALL results in grid layout (no scroll, with autorotate)
         noResults.style.display = 'none';
         wrapper.style.display = '';
         document.getElementById('carouselDots').style.display = 'none';
         document.querySelectorAll('.carousel-nav').forEach(btn => btn.style.display = 'none');
         track.style.display = 'flex';
-        track.style.flexWrap = 'nowrap';
+        track.style.flexWrap = 'wrap';
         track.style.gap = '15px';
-        track.style.padding = '0 55px';
-        track.style.overflowX = 'auto';
+        track.style.padding = '0';
+        track.style.overflowX = 'visible';
         track.style.transform = 'translateX(0px)';
         currentPosition = 0;
         isSearchMode = true;
