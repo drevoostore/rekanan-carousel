@@ -188,8 +188,11 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
         totalCards = CARDS_PER_VISIT;
         setCardSizes();
         console.log('After setCardSizes: cardWidth=', cardWidth, 'visibleCards=', visibleCards, 'totalCards=', totalCards);
-        // Reset track completely - use cssText for clean slate
-        track.style.cssText = 'display: flex; gap: 15px; padding: 0 55px; transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); overflow: hidden; flex-wrap: nowrap; flex-direction: row; transform: translateX(0px)';
+        // Calculate total track width needed
+        const totalTrackWidth = (CARDS_PER_VISIT * cardWidth) + ((CARDS_PER_VISIT - 1) * 15);
+        console.log('Total track width needed:', totalTrackWidth);
+        // Reset track with explicit width
+        track.style.cssText = 'display: flex; gap: 15px; padding: 0 55px; transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); overflow: hidden; flex-wrap: nowrap; flex-direction: row; transform: translateX(0px); width: ' + totalTrackWidth + 'px; max-width: none';
         // Clear cards
         track.innerHTML = '';
         // Force reflow
