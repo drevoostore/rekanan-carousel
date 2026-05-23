@@ -64,9 +64,9 @@
   </div>
   <script>
     const CARDS_PER_VISIT = 16;
-    function renderCarousel() {
+    function renderCarousel(data) {
       const shuffled = allRekanans.slice().sort(() => Math.random() - 0.5);
-      const selected = shuffled.slice(0, CARDS_PER_VISIT);
+      const selected = data ? data : shuffled.slice(0, CARDS_PER_VISIT);
       track.innerHTML = selected.map(r => {
         const kotaTitle = r.kota.charAt(0).toUpperCase() + r.kota.slice(1);
         const igLink = r.instagram.replace(/^@/, '');
@@ -122,18 +122,25 @@
     function moveCarousel(direction) { const newPosition = currentPosition + (direction * visibleCards); currentPosition = Math.max(0, Math.min(newPosition, maxPosition)); updateCarousel(); resetAutoScroll(); }
     function goToSlide(slideIndex) { currentPosition = slideIndex * visibleCards; currentPosition = Math.min(currentPosition, maxPosition); updateCarousel(); resetAutoScroll(); }
     function updateCarousel() { track.style.transform = `translateX(-${currentPosition * (cardWidth + 15)}px)`; updateDots(); sendHeight(); }
-    function resetAutoScroll() { if (autoScrollInterval) clearInterval(autoScrollInterval); autoScrollInterval = setInterval(() => { if (currentPosition >= maxPosition) currentPosition = 0; else currentPosition++; updateCarousel(); }, 3000); }
+    function resetAutoScroll() { if (autoScrollInterval) clearInterval(autoScrollInterval); autoScrollInterval = setInterval(() => { if (currentPosition >= maxPosition) currentPosition = 0; else currentPosition++; updateCarousel(); }, 1000); }
     function filterCards(query) {
       const q = query.toLowerCase().trim();
-      let visibleCount = 0;
-      allCards.forEach(card => {
-        const kota = (card.dataset.kota || '').toLowerCase();
-        const nama = (card.dataset.nama || '').toLowerCase();
-        const match = !q || kota.includes(q) || nama.includes(q);
-        card.style.display = match ? '' : 'none';
-        if (match) visibleCount++;
+      if (!q) {
+        // Restore original 16 random cards when clearing search
+        wrapper.style.display = '';
+        document.getElementById('carouselDots').style.display = '';
+        noResults.style.display = 'none';
+        renderCarousel();
+        resetAutoScroll();
+        return;
+      }
+      // Search across ALL rekanans (not just the 16 random displayed)
+      const matched = allRekanans.filter(r => {
+        const kota = r.kota.toLowerCase();
+        const nama = r.nama.toLowerCase();
+        return kota.includes(q) || nama.includes(q);
       });
-      if (visibleCount === 0) {
+      if (matched.length === 0) {
         wrapper.style.display = 'none';
         document.getElementById('carouselDots').style.display = 'none';
         noResults.style.display = 'block';
@@ -141,15 +148,8 @@
         wrapper.style.display = '';
         document.getElementById('carouselDots').style.display = '';
         noResults.style.display = 'none';
-        totalCards = visibleCount;
-        currentPosition = 0;
-        prevTranslate = 0;
-        currentTranslate = 0;
-        setCardSizes();
-        track.style.transform = 'translateX(0px)';
-        initDots();
-        updateDots();
-        sendHeight();
+        renderCarousel(matched);
+        resetAutoScroll();
       }
     }
     track.addEventListener('mousedown', startDrag); track.addEventListener('touchstart', startDrag); track.addEventListener('mousemove', drag); track.addEventListener('touchmove', drag); track.addEventListener('mouseup', endDrag); track.addEventListener('touchend', endDrag); track.addEventListener('mouseleave', endDrag);
@@ -159,6 +159,7 @@
     function getPositionX(e) { return e.type.includes('mouse') ? e.pageX : e.touches[0].clientX; }
     window.addEventListener('resize', () => { setCardSizes(); updateCarousel(); });
     renderCarousel();
+    resetAutoScroll();
     wrapper.addEventListener('mouseenter', () => { if (autoScrollInterval) clearInterval(autoScrollInterval); });
     wrapper.addEventListener('mouseleave', () => { resetAutoScroll(); });
   </script>

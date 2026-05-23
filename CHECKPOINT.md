@@ -71,6 +71,31 @@ We tested multiple configs and settled on **4 cards desktop**:
 - Smaller fonts: title 13px, info 12px, badge 11px
 - Nav space reduced to 60px for single-card mode
 
+#### 7. Updated Data Source 📊
+- **New Google Sheet** with **493 rekanans** (was 16)
+- CSV URL updated in `scripts/generate_carousel.py`
+- Parser auto-detects columns by header name (`nama`, `kota`, `instagram`, `telp`, `alamat`)
+
+#### 8. Instagram Icon Fixed 📷
+- **Bug:** Instagram row showed **phone icon** instead of camera
+- **Fix:** Replaced SVG path with Instagram logo: rounded rectangle + circle + flash dot
+
+#### 9. JS-Randomized 16 Cards Per Visit 🎲
+**Problem:** 493 cards was too many for a carousel — huge file, slow, endless scrolling.
+
+**Solution:**
+- Python embeds **all 493 records as JSON array** in HTML (~60 KB)
+- File size reduced from ~495 KB → ~65 KB (87% smaller)
+- **Browser JS shuffles** all 493 with Fisher-Yates sort:
+  ```javascript
+  const shuffled = allRekanans.slice().sort(() => Math.random() - 0.5);
+  const selected = shuffled.slice(0, 16);
+  ```
+- **Renders 16 random cards** per visit
+- Every page refresh = **new 16 cards**
+
+**Configurable:** Edit `CARDS_PER_VISIT = 16` in `generate_carousel.py`
+
 ## Cloudflare Pages URL
 
 Dev (canonical, used in PageFly):
@@ -110,7 +135,9 @@ https://rekanan-carousel.pages.dev/carousel_dev.html
 
 ## Current Carousel Features
 
-- ✅ **Search** by nama rekanan or kota
+- ✅ **493 rekanans** embedded as JSON data
+- ✅ **16 random cards** per visit (shuffled in browser)
+- ✅ **Search** by nama rekanan or kota (within current 16)
 - ✅ **4 cards** per view on desktop (responsive: 3→2→1)
 - ✅ **Consistent card height** with address at bottom
 - ✅ **Auto-scroll** (3s interval), pauses on hover
@@ -118,16 +145,17 @@ https://rekanan-carousel.pages.dev/carousel_dev.html
 - ✅ **Prev/Next** buttons + dot indicators
 - ✅ **Auto-height iframe** — no scrollbar, parent resizes dynamically
 - ✅ **Mobile-optimized** — 1 readable card at 320px
+- ✅ **Instagram icon** (camera, not phone)
 
 ## Project Structure
 
 ```
 /home/dev/rekanan-carousel/
 ├── scripts/
-│   ├── generate_carousel.py         # Main generator (responsive cards, searchbox)
+│   ├── generate_carousel.py         # Main generator (JS-randomized 16 from 493)
 │   └── deploy.sh                    # Git push → Cloudflare deploy
 ├── outputs/
-│   └── carousel_dev.html            # Generated HTML (auto-deployed to Cloudflare)
+│   └── carousel_dev.html            # Generated HTML (~65 KB with JSON data)
 ├── docs/
 │   ├── pagefly_searchbox_plan.md
 │   ├── google_sheets_setup.md
@@ -142,7 +170,7 @@ https://rekanan-carousel.pages.dev/carousel_dev.html
 
 ```bash
 # On dev1 (development & testing)
-python3 scripts/generate_carousel.py   # outputs carousel_dev.html
+python3 scripts/generate_carousel.py   # fetches CSV, outputs carousel_dev.html
 ./scripts/deploy.sh                    # commits and pushes to GitHub
 ```
 
@@ -150,11 +178,13 @@ python3 scripts/generate_carousel.py   # outputs carousel_dev.html
 
 - `carousel_*.html` is fully self-contained (CSS + JS inline).
 - No server-side dependencies needed for hosting.
-- **Dev vs Prod switch:** Edit line 21 in `scripts/generate_carousel.py`
+- **Dev vs Prod switch:** Edit line 17 in `scripts/generate_carousel.py`
   - dev1: `OUTPUT_FILE = Path("outputs") / "carousel_dev.html"`
   - dev2: `OUTPUT_FILE = Path("outputs") / "carousel_prod.html"`
+- **Cards per visit:** Edit `CARDS_PER_VISIT = 16` in `scripts/generate_carousel.py`
 - **Card sizing is dynamic** — JS calculates `--card-width` based on wrapper width.
 - **Breakpoints:** <420px=1 card, 420-720px=2, 720-1000px=3, >1000px=4.
+- **Data source:** Google Sheets CSV (auto-fetched during generation).
 
 ---
 
