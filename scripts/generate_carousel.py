@@ -178,7 +178,7 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
         track.style.display = 'flex';
         track.style.flexWrap = 'nowrap';
         track.style.padding = '0 55px';
-        track.style.overflowX = 'visible';
+        track.style.overflowX = 'hidden';
         noResults.style.display = 'none';
         isSearchMode = false;
         renderCarousel();
@@ -196,7 +196,7 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
         document.getElementById('carouselDots').style.display = 'none';
         noResults.style.display = 'block';
       } else {
-        // Show ALL results in grid layout (no scroll, with autorotate)
+        // Show ALL results in grid layout (no scroll, no autorotate)
         noResults.style.display = 'none';
         wrapper.style.display = '';
         document.getElementById('carouselDots').style.display = 'none';
@@ -205,14 +205,14 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
         track.style.flexWrap = 'wrap';
         track.style.gap = '15px';
         track.style.padding = '0';
-        track.style.overflowX = 'visible';
+        track.style.overflowX = 'hidden';
         track.style.transform = 'translateX(0px)';
         currentPosition = 0;
         isSearchMode = true;
-        searchTotalCards = matched.length;
         renderCarousel(matched);
-        // Start auto-scroll for search results (with hover pause)
-        resetAutoScroll();
+        // Stop auto-scroll during search (no scroll, no autorotate)
+        if (autoScrollInterval) clearInterval(autoScrollInterval);
+        autoScrollInterval = null;
       }
     }
     track.addEventListener('mousedown', startDrag); track.addEventListener('touchstart', startDrag); track.addEventListener('mousemove', drag); track.addEventListener('touchmove', drag); track.addEventListener('mouseup', endDrag); track.addEventListener('touchend', endDrag); track.addEventListener('mouseleave', endDrag);
