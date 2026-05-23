@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 """
 Generate carousel searchbox HTML from Google Sheets CSV
-Output: outputs/carousel_dev.html  (on dev1)
-        outputs/carousel_prod.html (on dev2 -- EDIT line 18 below)
+Output: outputs/carousel_dev.html  (dev1 - development)
+        outputs/carousel_prod.html (dev2 - production)
 Features: Horizontal carousel, JS-randomized 16 cards per visit, auto-scroll, SEARCH by nama/kota
 
-HOW TO SWITCH TO PROD ON DEV2:
-  Edit line 18 below:
-OUTPUT_FILE = Path("outputs") / "carousel_dev.html"
+USAGE:
+  python3 scripts/generate_carousel.py           # Generate BOTH dev and prod
+  python3 scripts/generate_carousel.py --dev     # Generate dev only
+  python3 scripts/generate_carousel.py --prod    # Generate prod only
 """
 
-import requests, csv, random, json
+import requests, csv, random, json, sys, argparse
 from io import StringIO
 from pathlib import Path
 
-OUTPUT_FILE = Path("outputs") / "carousel_prod.html"
 CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRD0TXsFi9faOkOjDPVuvZj93bBhZE_gwA62TitZwlg--d7O0B7v8BCpkI6dr0d21SM6JsZeuwU7ine/pub?gid=252275152&single=true&output=csv"
 CARDS_PER_VISIT = 16
 
@@ -302,24 +302,42 @@ def fetch_and_parse(csv_url):
     return rekanans
 
 
+def generate_output(output_path, rekanans):
+    """Generate a single output file"""
+    rekanans_json = json.dumps(rekanans, ensure_ascii=False)
+    html = CAROUSEL_HTML.replace('{all_rekanans_json}', rekanans_json)
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(output_path, 'w', encoding='utf-8') as f:
+        f.write(html)
+    print(f"✅ Generated: {output_path}")
+    print(f"   Total rekanans embedded: {len(rekanans)}")
+    print(f"   Cards shown per visit: {CARDS_PER_VISIT} (randomized in browser)")
+    print(f"   Layout: Horizontal carousel with search")
+
+
 def main():
     """Main function: embed all rekanans as JSON, JS renders 16 random cards per visit"""
+    parser = argparse.ArgumentParser(description='Generate carousel searchbox HTML')
+    parser.add_argument('--dev', action='store_true', help='Generate dev only')
+    parser.add_argument('--prod', action='store_true', help='Generate prod only')
+    args = parser.parse_args()
+    
     print("🎠 Generating Carousel Searchbox...")
-    print(f"   Output: {OUTPUT_FILE}")
-    print(f"   Cards per visit: {CARDS_PER_VISIT}")
     rekanans = fetch_and_parse(CSV_URL)
     if not rekanans:
         print("❌ No data found!")
         return 1
-    rekanans_json = json.dumps(rekanans, ensure_ascii=False)
-    html = CAROUSEL_HTML.replace('{all_rekanans_json}', rekanans_json)
-    OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
-    with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
-        f.write(html)
-    print(f"✅ Generated: {OUTPUT_FILE}")
-    print(f"   Total rekanans embedded: {len(rekanans)}")
-    print(f"   Cards shown per visit: {CARDS_PER_VISIT} (randomized in browser)")
-    print(f"   Layout: Horizontal carousel with search")
+    
+    # Determine which files to generate
+    if args.dev and not args.prod:
+        generate_output(Path("outputs") / "carousel_dev.html", rekanans)
+    elif args.prod and not args.dev:
+        generate_output(Path("outputs") / "carousel_prod.html", rekanans)
+    else:
+        # Default: generate both
+        generate_output(Path("outputs") / "carousel_dev.html", rekanans)
+        generate_output(Path("outputs") / "carousel_prod.html", rekanans)
+    
     return 0
 
 
