@@ -179,9 +179,15 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
         track.style.flexWrap = 'nowrap';
         track.style.padding = '0 55px';
         track.style.overflow = 'hidden';
+        track.style.width = '100%';
         noResults.style.display = 'none';
         isSearchMode = false;
+        // Force re-render with fresh 16 random cards
         renderCarousel();
+        // Reset carousel position and recalculate
+        currentPosition = 0;
+        setCardSizes();
+        updateCarousel();
         resetAutoScroll();
         return;
       }
