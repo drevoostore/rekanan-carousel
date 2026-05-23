@@ -178,7 +178,8 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
         track.style.display = 'flex';
         track.style.flexWrap = 'nowrap';
         track.style.padding = '0 55px';
-        track.style.overflowX = 'hidden';
+        track.style.overflow = 'hidden';
+        track.style.pointerEvents = 'auto';
         noResults.style.display = 'none';
         isSearchMode = false;
         renderCarousel();
@@ -196,7 +197,7 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
         document.getElementById('carouselDots').style.display = 'none';
         noResults.style.display = 'block';
       } else {
-        // Show ALL results in grid layout (no scroll, no autorotate)
+        // Show ALL results in grid layout (no scroll, no autorotate, no drag)
         noResults.style.display = 'none';
         wrapper.style.display = '';
         document.getElementById('carouselDots').style.display = 'none';
@@ -205,12 +206,13 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
         track.style.flexWrap = 'wrap';
         track.style.gap = '15px';
         track.style.padding = '0';
-        track.style.overflowX = 'hidden';
+        track.style.overflow = 'hidden';
         track.style.transform = 'translateX(0px)';
+        track.style.pointerEvents = 'none';
         currentPosition = 0;
         isSearchMode = true;
         renderCarousel(matched);
-        // Stop auto-scroll during search (no scroll, no autorotate)
+        // Stop auto-scroll during search
         if (autoScrollInterval) clearInterval(autoScrollInterval);
         autoScrollInterval = null;
       }
