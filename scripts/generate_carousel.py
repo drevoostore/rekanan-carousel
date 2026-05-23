@@ -51,6 +51,21 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
     .rekanan-card a { color: #E1306C; text-decoration: none; font-weight: 500; transition: color 0.3s ease; }
     .rekanan-card a:hover { color: #C13584; text-decoration: underline; }
     .rekanan-card .address { color: #666; font-size: 13px; line-height: 1.5; margin-top: auto; padding-top: 12px; border-top: 1px solid #e8e8e8; flex-shrink: 0; }
+    .search-box-wrapper { max-width: 500px; margin: 0 auto 30px; position: relative; }
+    .search-box-wrapper svg { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: #999; pointer-events: none; }
+    .search-box { width: 100%; padding: 14px 18px 14px 46px; font-size: 15px; border: 2px solid #e8e8ef; border-radius: 30px; outline: none; transition: all 0.3s ease; font-family: inherit; background: #fff; }
+    .search-box:focus { border-color: #4a90d9; box-shadow: 0 4px 12px rgba(74, 144, 217, 0.15); }
+    .search-box::placeholder { color: #aaa; }
+    .no-results { text-align: center; padding: 60px 20px; color: #888; font-size: 16px; display: none; }
+    .no-results svg { width: 48px; height: 48px; margin-bottom: 16px; color: #ccc; }
+    .carousel-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; background: #fff; border: 2px solid #e8e8ef; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; z-index: 10; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .carousel-nav:hover { background: #4a90d9; border-color: #4a90d9; color: #fff; }
+    .carousel-nav.prev { left: 10px; } .carousel-nav.next { right: 10px; }
+    .carousel-nav svg { width: 20px; height: 20px; }
+    .carousel-dots { display: flex; justify-content: center; gap: 8px; margin-top: 20px; }
+    .carousel-dot { width: 10px; height: 10px; border-radius: 50%; background: #ddd; cursor: pointer; transition: all 0.3s ease; }
+    .carousel-dot.active { background: #4a90d9; width: 30px; border-radius: 5px; }
+    .carousel-dot:hover { background: #357abd; }
     @media (max-width: 768px) { .rekanan-card { flex: 0 0 280px; padding: 20px; min-height: 280px; } .rekanan-card strong { font-size: 16px; } .carousel-nav { width: 36px; height: 36px; } .carousel-nav svg { width: 16px; height: 16px; } }
     @media (max-width: 480px) { .rekanan-card { flex: 0 0 260px; min-height: 260px; } .header h1 { font-size: 22px; } .search-box { padding: 12px 16px 12px 40px; font-size: 14px; } }
   </style>
