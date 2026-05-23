@@ -3,23 +3,20 @@
 Generate carousel searchbox HTML from Google Sheets CSV
 Output: outputs/carousel_dev.html  (on dev1)
         outputs/carousel_prod.html (on dev2 -- EDIT line 18 below)
-Features: Horizontal carousel, randomized order, auto-scroll, SEARCH by nama/kota
+Features: Horizontal carousel, JS-randomized 16 cards per visit, auto-scroll, SEARCH by nama/kota
 
 HOW TO SWITCH TO PROD ON DEV2:
   Edit line 18 below:
     OUTPUT_FILE = Path("outputs") / "carousel_prod.html"
 """
 
-# 🎠 REKANAN CAROUSEL GENERATOR
-# Features: Horizontal carousel, randomized, auto-scroll, search by nama/kota
-# Output: outputs/carousel_dev.html (dev1) or carousel_prod.html (dev2)
-
-import requests, csv, random
+import requests, csv, random, json
 from io import StringIO
 from pathlib import Path
 
 OUTPUT_FILE = Path("outputs") / "carousel_dev.html"
 CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRD0TXsFi9faOkOjDPVuvZj93bBhZE_gwA62TitZwlg--d7O0B7v8BCpkI6dr0d21SM6JsZeuwU7ine/pub?gid=252275152&single=true&output=csv"
+CARDS_PER_VISIT = 16
 
 # ===== CAROUSEL HTML TEMPLATE =====
 CAROUSEL_HTML = r"""<!DOCTYPE html>
@@ -32,9 +29,6 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif; background: #fff; padding: 20px 20px 40px; }
     .container { width: 100%; margin: 0 auto; }
-    .header { text-align: center; margin-bottom: 30px; }
-    .header h1 { font-size: 28px; color: #2c3e50; margin-bottom: 8px; }
-    .header p { color: #666; font-size: 14px; }
     .carousel-wrapper { position: relative; overflow: hidden; padding: 20px 0; }
     .carousel-track { display: flex; gap: 15px; padding: 0 55px; transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); will-change: transform; }
     .carousel-track.dragging { transition: none; }
@@ -81,15 +75,51 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
     </div>
     <div class="carousel-wrapper" id="carouselWrapper">
       <button class="carousel-nav prev" onclick="moveCarousel(-1)" aria-label="Previous"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
-      <div class="carousel-track" id="carouselTrack">
-{rekanan_cards}
-      </div>
+      <div class="carousel-track" id="carouselTrack"></div>
+      <script>
+        const allRekanans = {all_rekanans_json};
+      </script>
       <button class="carousel-nav next" onclick="moveCarousel(1)" aria-label="Next"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
     </div>
     <div class="carousel-dots" id="carouselDots"></div>
   </div>
   <script>
-    let currentPosition = 0; let cardWidth = 0; let visibleCards = 4; let totalCards = {total_cards}; let maxPosition = Math.max(0, totalCards - visibleCards); let autoScrollInterval = null; let isDragging = false; let startX = 0; let currentTranslate = 0; let prevTranslate = 0;
+    const CARDS_PER_VISIT = 16;
+    function renderCarousel() {
+      const shuffled = allRekanans.slice().sort(() => Math.random() - 0.5);
+      const selected = shuffled.slice(0, CARDS_PER_VISIT);
+      track.innerHTML = selected.map(r => {
+        const kotaTitle = r.kota.charAt(0).toUpperCase() + r.kota.slice(1);
+        const igLink = r.instagram.replace(/^@/, '');
+        return `
+        <div class="rekanan-card" data-kota="${r.kota}" data-nama="${r.nama}">
+          <div class="card-content">
+            <span class="city-badge">📍 ${kotaTitle}</span>
+            <strong>${r.nama}</strong>
+            <div class="info-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><circle cx="12" cy="12" r="5"></circle><circle cx="17" cy="7" r="1.5" fill="currentColor" stroke="none"></circle></svg>
+              <a href="https://instagram.com/${igLink}" target="_blank">${r.instagram}</a>
+            </div>
+            <div class="info-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+              <span>${r.telp}</span>
+            </div>
+          </div>
+          <div class="address">📍 ${r.alamat}, ${r.kota}</div>
+        </div>
+      `}).join('');
+      allCards = Array.from(track.children);
+      totalCards = selected.length;
+      currentPosition = 0;
+      prevTranslate = 0;
+      currentTranslate = 0;
+      setCardSizes();
+      track.style.transform = 'translateX(0px)';
+      initDots();
+      updateDots();
+      sendHeight();
+    }
+    let currentPosition = 0; let cardWidth = 0; let visibleCards = 4; let totalCards = 16; let maxPosition = Math.max(0, totalCards - visibleCards); let autoScrollInterval = null; let isDragging = false; let startX = 0; let currentTranslate = 0; let prevTranslate = 0;
     const track = document.getElementById('carouselTrack'); const wrapper = document.getElementById('carouselWrapper'); const container = document.querySelector('.container'); const searchInput = document.getElementById('searchInput'); const noResults = document.getElementById('noResults');
     let allCards = Array.from(track.children);
     function getWrapperWidth() { return wrapper.clientWidth; }
@@ -149,7 +179,7 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
     function endDrag() { if (!isDragging) return; isDragging = false; track.classList.remove('dragging'); const movedBy = currentTranslate - prevTranslate; const slideWidth = cardWidth + 15; if (movedBy < -slideWidth/2) currentPosition += visibleCards; if (movedBy > slideWidth/2) currentPosition -= visibleCards; currentPosition = Math.max(0, Math.min(currentPosition, maxPosition)); prevTranslate = -currentPosition * slideWidth; currentTranslate = prevTranslate; updateCarousel(); resetAutoScroll(); }
     function getPositionX(e) { return e.type.includes('mouse') ? e.pageX : e.touches[0].clientX; }
     window.addEventListener('resize', () => { setCardSizes(); updateCarousel(); });
-    setCardSizes(); initDots(); resetAutoScroll();
+    renderCarousel();
     wrapper.addEventListener('mouseenter', () => { if (autoScrollInterval) clearInterval(autoScrollInterval); });
     wrapper.addEventListener('mouseleave', () => { resetAutoScroll(); });
   </script>
@@ -169,26 +199,9 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
 </html>
 """
 
-REKANAN_CARD_TEMPLATE = r"""        <div class="rekanan-card" data-kota="{kota}" data-nama="{nama}">
-          <div class="card-content">
-            <span class="city-badge">📍 {city_title}</span>
-            <strong>{nama}</strong>
-            <div class="info-row">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><circle cx="12" cy="12" r="5"></circle><circle cx="17" cy="7" r="1.5" fill="currentColor" stroke="none"></circle></svg>
-              <a href="https://instagram.com/{instagram_link}" target="_blank">{instagram}</a>
-            </div>
-            <div class="info-row">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-              <span>{telp}</span>
-            </div>
-          </div>
-          <div class="address">📍 {alamat}, {kota}</div>
-        </div>
-"""
-
 
 def fetch_and_parse(csv_url):
-    """Fetch CSV and parse data"""
+    """Fetch CSV and parse data into JSON-ready dicts"""
     print(f"Fetching CSV from: {csv_url[:50]}...")
     response = requests.get(csv_url, timeout=30)
     response.raise_for_status()
@@ -198,7 +211,7 @@ def fetch_and_parse(csv_url):
             'nama': r['nama'].strip(),
             'kota': r['kota'].strip(),
             'instagram': r['instagram'].strip(),
-'telp': r['telp'].strip(),
+            'telp': r['telp'].strip(),
             'alamat': r['alamat'].strip()
         }
         for r in reader
@@ -207,39 +220,24 @@ def fetch_and_parse(csv_url):
     return rekanans
 
 
-def generate_cards(rekanans):
-    """Generate carousel cards"""
-    randomized = rekanans.copy()
-    random.shuffle(randomized)
-    cards = []
-    for r in randomized:
-        instagram_clean = r['instagram'].lstrip('@')
-        city_title = r['kota'].title()
-        cards.append(REKANAN_CARD_TEMPLATE.format(
-            nama=r['nama'], kota=r['kota'], city_title=city_title,
-            instagram=r['instagram'], instagram_link=instagram_clean,
-            telp=r['telp'], alamat=r['alamat']
-        ))
-    return "\n".join(cards), len(randomized)
-
-
 def main():
-    """Main function"""
+    """Main function: embed all rekanans as JSON, JS renders 16 random cards per visit"""
     print("🎠 Generating Carousel Searchbox...")
     print(f"   Output: {OUTPUT_FILE}")
+    print(f"   Cards per visit: {CARDS_PER_VISIT}")
     rekanans = fetch_and_parse(CSV_URL)
     if not rekanans:
         print("❌ No data found!")
         return 1
-    cards_html, total_cards = generate_cards(rekanans)
-    html = CAROUSEL_HTML.replace('{rekanan_cards}', cards_html).replace('{total_cards}', str(total_cards))
+    rekanans_json = json.dumps(rekanans, ensure_ascii=False)
+    html = CAROUSEL_HTML.replace('{all_rekanans_json}', rekanans_json)
     OUTPUT_FILE.parent.mkdir(parents=True, exist_ok=True)
     with open(OUTPUT_FILE, 'w', encoding='utf-8') as f:
         f.write(html)
     print(f"✅ Generated: {OUTPUT_FILE}")
-    print(f"   Total cards: {total_cards}")
-    print(f"   Layout: Horizontal carousel (randomized)")
-    print(f"   Features: Auto-scroll, drag/swipe, navigation buttons, SEARCH by nama/kota")
+    print(f"   Total rekanans embedded: {len(rekanans)}")
+    print(f"   Cards shown per visit: {CARDS_PER_VISIT} (randomized in browser)")
+    print(f"   Layout: Horizontal carousel with search")
     return 0
 
 
