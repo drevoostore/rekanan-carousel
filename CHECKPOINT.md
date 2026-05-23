@@ -96,6 +96,26 @@ We tested multiple configs and settled on **4 cards desktop**:
 
 **Configurable:** Edit `CARDS_PER_VISIT = 16` in `generate_carousel.py`
 
+#### 10. Bug Fixes — Autorotate & Search 🔧
+**Issues reported:**
+1. Autorotate function not working at all
+2. Search only worked on the 16 random cards, not all 493 rekanans
+
+**Root causes found:**
+1. **`sendHeight is not defined`** ReferenceError — The `sendHeight()` function was defined in a second `<script>` block, but `renderCarousel()` was calling it before it existed. This crashed the JS before `resetAutoScroll()` could start.
+2. **`filterCards()` only searched DOM elements** — It was looping through `allCards` (the 16 rendered cards) instead of searching `allRekanans` (all 493 records).
+
+**Fixes applied:**
+1. **Moved `sendHeight` script to run FIRST** — Added `window.sendHeight = sendHeight` to expose it globally before main JS runs
+2. **Rewrote `filterCards(query)`** — Now filters from `allRekanans` array and re-renders carousel with matching results
+3. **Changed autorotate interval** — Set to 2000ms (2 seconds per card)
+
+**Files modified:**
+- `scripts/generate_carousel.py` — Fixed script order, rewrote `filterCards()`, changed interval to 2000ms
+- `outputs/carousel_dev.html` — Regenerated with fixes
+
+**Test:** Open browser console — should see "AutoScroll tick" logs every 2 seconds. Search for a rekanan not in the initial 16 cards — it should appear.
+
 ## Cloudflare Pages URL
 
 Dev (canonical, used in PageFly):
@@ -137,10 +157,10 @@ https://rekanan-carousel.pages.dev/carousel_dev.html
 
 - ✅ **493 rekanans** embedded as JSON data
 - ✅ **16 random cards** per visit (shuffled in browser)
-- ✅ **Search** by nama rekanan or kota (within current 16)
+- ✅ **Search** by nama rekanan or kota (searches ALL 493 rekanans, not just 16)
 - ✅ **4 cards** per view on desktop (responsive: 3→2→1)
 - ✅ **Consistent card height** with address at bottom
-- ✅ **Auto-scroll** (3s interval), pauses on hover
+- ✅ **Auto-scroll** (2s interval), pauses on hover
 - ✅ **Drag/swipe** navigation
 - ✅ **Prev/Next** buttons + dot indicators
 - ✅ **Auto-height iframe** — no scrollbar, parent resizes dynamically
@@ -189,5 +209,5 @@ python3 scripts/generate_carousel.py   # fetches CSV, outputs carousel_dev.html
 ---
 
 **Session Date:** May 23, 2026
-**Status:** ✅ Development complete — Ready for customer review
+**Status:** ✅ All bugs fixed — Autorotate & Search working properly
 **Next:** Customer testing → Prod deployment on dev2 (when approved)
