@@ -10,15 +10,14 @@ HOW TO SWITCH TO PROD ON DEV2:
     OUTPUT_FILE = Path("outputs") / "carousel_prod.html"
 """
 
-import requests
-import csv
+# 🎠 REKANAN CAROUSEL GENERATOR
+# Features: Horizontal carousel, randomized, auto-scroll, search by nama/kota
+# Output: outputs/carousel_dev.html (dev1) or carousel_prod.html (dev2)
+
+import requests, csv, random
 from io import StringIO
 from pathlib import Path
-import random
 
-# ===== CONFIGURATION =====
-# EDIT THIS LINE WHEN COPYING TO DEV2:
-# Change "carousel_dev.html" to "carousel_prod.html"
 OUTPUT_FILE = Path("outputs") / "carousel_dev.html"
 CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQnV37JIH3rFESwe3HLDDo1m2SNMZcft6dJivj82kSDSlntZ_Gm7bwr25eFXqMhNQnynJuH3tdJVdvL/pub?gid=0&single=true&output=csv"
 
@@ -37,13 +36,13 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
     .header h1 { font-size: 28px; color: #2c3e50; margin-bottom: 8px; }
     .header p { color: #666; font-size: 14px; }
     .carousel-wrapper { position: relative; overflow: hidden; padding: 20px 0; }
-    .carousel-track { display: flex; gap: 20px; transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); will-change: transform; }
+    .carousel-track { display: flex; gap: 15px; transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); will-change: transform; }
     .carousel-track.dragging { transition: none; }
-    .rekanan-card { flex: 0 0 350px; min-height: 320px; display: flex; flex-direction: column; background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); border: 2px solid #e8e8e8; border-radius: 12px; padding: 24px; transition: all 0.3s ease; cursor: pointer; position: relative; overflow: hidden; }
+    .rekanan-card { flex: 0 0 330px; min-height: 300px; display: flex; flex-direction: column; background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); border: 2px solid #e8e8e8; border-radius: 12px; padding: 20px; transition: all 0.3s ease; cursor: pointer; position: relative; overflow: hidden; }
     .rekanan-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: linear-gradient(180deg, #4a90d9 0%, #357abd 100%); opacity: 0; transition: opacity 0.3s ease; }
     .rekanan-card:hover { background: linear-gradient(135deg, #e8f4f8 0%, #f0f7fb 100%); box-shadow: 0 8px 24px rgba(74, 144, 217, 0.2); transform: translateY(-4px); border-color: #4a90d9; }
     .rekanan-card:hover::before { opacity: 1; }
-    .rekanan-card strong { display: block; margin-bottom: 12px; color: #2c3e50; font-size: 18px; font-weight: 700; line-height: 1.4; }
+    .rekanan-card strong { display: block; margin-bottom: 10px; color: #2c3e50; font-size: 16px; font-weight: 700; line-height: 1.3; }
     .rekanan-card .card-content { flex: 1 1 auto; }
     .rekanan-card .city-badge { display: inline-block; padding: 4px 12px; background: linear-gradient(135deg, #4a90d9 0%, #357abd 100%); color: #fff; border-radius: 16px; font-size: 12px; font-weight: 600; margin-bottom: 12px; }
     .rekanan-card .info-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 14px; }
@@ -66,8 +65,8 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
     .carousel-dot { width: 10px; height: 10px; border-radius: 50%; background: #ddd; cursor: pointer; transition: all 0.3s ease; }
     .carousel-dot.active { background: #4a90d9; width: 30px; border-radius: 5px; }
     .carousel-dot:hover { background: #357abd; }
-    @media (max-width: 768px) { .rekanan-card { flex: 0 0 280px; padding: 20px; min-height: 280px; } .rekanan-card strong { font-size: 16px; } .carousel-nav { width: 36px; height: 36px; } .carousel-nav svg { width: 16px; height: 16px; } }
-    @media (max-width: 480px) { .rekanan-card { flex: 0 0 260px; min-height: 260px; } .header h1 { font-size: 22px; } .search-box { padding: 12px 16px 12px 40px; font-size: 14px; } }
+    @media (max-width: 768px) { .rekanan-card { flex: 0 0 260px; padding: 16px; min-height: 260px; } .rekanan-card strong { font-size: 15px; } .carousel-nav { width: 36px; height: 36px; } .carousel-nav svg { width: 16px; height: 16px; } }
+    @media (max-width: 480px) { .rekanan-card { flex: 0 0 240px; min-height: 240px; } .header h1 { font-size: 22px; } .search-box { padding: 12px 16px 12px 40px; font-size: 14px; } }
   </style>
 </head>
 <body>
@@ -90,7 +89,7 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
     <div class="carousel-dots" id="carouselDots"></div>
   </div>
   <script>
-    let currentPosition = 0; let cardWidth = 370; let visibleCards = Math.floor(window.innerWidth / cardWidth); let totalCards = {total_cards}; let maxPosition = Math.max(0, totalCards - visibleCards); let autoScrollInterval = null; let isDragging = false; let startX = 0; let currentTranslate = 0; let prevTranslate = 0;
+    let currentPosition = 0; let cardWidth = 345; let visibleCards = Math.floor(window.innerWidth / cardWidth); let totalCards = {total_cards}; let maxPosition = Math.max(0, totalCards - visibleCards); let autoScrollInterval = null; let isDragging = false; let startX = 0; let currentTranslate = 0; let prevTranslate = 0;
     const track = document.getElementById('carouselTrack'); const wrapper = document.getElementById('carouselWrapper'); const searchInput = document.getElementById('searchInput'); const noResults = document.getElementById('noResults');
     let allCards = Array.from(track.children);
     function initDots() { const dotsContainer = document.getElementById('carouselDots'); dotsContainer.innerHTML = ''; const totalDots = Math.ceil(totalCards / visibleCards); for (let i = 0; i < totalDots; i++) { const dot = document.createElement('div'); dot.className = 'carousel-dot' + (i === 0 ? ' active' : ''); dot.onclick = () => goToSlide(i); dotsContainer.appendChild(dot); } }
