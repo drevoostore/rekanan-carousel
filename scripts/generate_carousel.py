@@ -171,6 +171,7 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
     function filterCards(query) {
       const q = query.toLowerCase().trim();
       if (!q) {
+        console.log('Clearing search, restoring carousel...');
         // Restore carousel mode when clearing search
         isSearchMode = false;
         noResults.style.display = 'none';
@@ -192,6 +193,7 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
         // Calculate sizes
         totalCards = CARDS_PER_VISIT;
         setCardSizes();
+        console.log('After setCardSizes: cardWidth=', cardWidth, 'visibleCards=', visibleCards, 'totalCards=', totalCards);
         // Render fresh 16 cards
         const shuffled = allRekanans.slice().sort(() => Math.random() - 0.5);
         const selected = shuffled.slice(0, CARDS_PER_VISIT);
@@ -202,6 +204,7 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
         }).join('');
         allCards = Array.from(track.children);
         totalCards = selected.length;
+        console.log('Rendered', allCards.length, 'cards');
         currentPosition = 0;
         prevTranslate = 0;
         currentTranslate = 0;
@@ -213,6 +216,7 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
         updateDots();
         sendHeight();
         resetAutoScroll();
+        console.log('Carousel restored, autoScroll started');
         return;
       }
       // Search across ALL rekanans (not just the 16 random displayed)
