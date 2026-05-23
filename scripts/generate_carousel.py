@@ -174,30 +174,25 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
         // Restore carousel mode when clearing search
         isSearchMode = false;
         noResults.style.display = 'none';
-        document.getElementById('carouselDots').style.display = 'flex';
-        document.querySelectorAll('.carousel-nav').forEach(btn => btn.style.display = 'flex');
-        // Reset wrapper
+        // Reset wrapper completely
+        wrapper.style.display = 'block';
         wrapper.style.overflow = 'hidden';
         wrapper.style.pointerEvents = 'auto';
-        // Reset track styles FIRST
-        track.style.transition = 'none';
-        track.style.transform = 'translateX(0px)';
-        track.style.display = 'flex';
-        track.style.flexWrap = 'nowrap';
-        track.style.flexDirection = 'row';
-        track.style.gap = '15px';
-        track.style.padding = '0 55px';
-        track.style.overflow = 'hidden';
-        // Force reflow
-        void track.offsetWidth;
+        wrapper.style.width = '';
+        wrapper.style.maxWidth = '';
+        // Reset dots and nav
+        document.getElementById('carouselDots').style.display = 'flex';
+        document.querySelectorAll('.carousel-nav').forEach(btn => btn.style.display = 'flex');
+        // Reset track completely - use cssText for clean slate
+        track.style.cssText = 'display: flex; gap: 15px; padding: 0 55px; transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); overflow: hidden; flex-wrap: nowrap; flex-direction: row; transform: translateX(0px); width: auto; max-width: none';
         // Clear cards
         track.innerHTML = '';
-        // Calculate card sizes BEFORE rendering
+        // Force reflow
+        void track.offsetWidth;
+        // Calculate sizes
         totalCards = CARDS_PER_VISIT;
         setCardSizes();
-        // Force CSS variable to apply
-        void cardWidth;
-        // Now render fresh 16 cards
+        // Render fresh 16 cards
         const shuffled = allRekanans.slice().sort(() => Math.random() - 0.5);
         const selected = shuffled.slice(0, CARDS_PER_VISIT);
         track.innerHTML = selected.map(r => {
@@ -210,7 +205,7 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
         currentPosition = 0;
         prevTranslate = 0;
         currentTranslate = 0;
-        // Final reflow and update
+        // Final updates
         void track.offsetWidth;
         track.style.transition = 'transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)';
         updateCarousel();
@@ -234,18 +229,14 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
         // Show ALL results in grid layout (no scroll, no autorotate, but links clickable)
         isSearchMode = true;
         noResults.style.display = 'none';
+        wrapper.style.display = 'block';
         wrapper.style.overflow = 'visible';
         wrapper.style.pointerEvents = 'auto';
+        wrapper.style.width = 'auto';
+        wrapper.style.maxWidth = 'none';
         document.getElementById('carouselDots').style.display = 'none';
         document.querySelectorAll('.carousel-nav').forEach(btn => btn.style.display = 'none');
-        track.style.transition = 'none';
-        track.style.transform = 'translateX(0px)';
-        track.style.display = 'flex';
-        track.style.flexWrap = 'wrap';
-        track.style.flexDirection = 'row';
-        track.style.gap = '15px';
-        track.style.padding = '0';
-        track.style.overflow = 'visible';
+        track.style.cssText = 'display: flex; gap: 15px; padding: 0; overflow: visible; flex-wrap: wrap; flex-direction: row; transform: translateX(0px); width: auto; max-width: none; transition: none';
         currentPosition = 0;
         renderCarousel(matched);
         // Stop auto-scroll during search
