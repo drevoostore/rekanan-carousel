@@ -166,6 +166,7 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
         document.querySelectorAll('.carousel-nav').forEach(btn => btn.style.display = '');
         track.style.display = 'flex';
         track.style.flexWrap = 'nowrap';
+        track.style.padding = '0 55px';
         noResults.style.display = 'none';
         renderCarousel();
         resetAutoScroll();
@@ -182,7 +183,7 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
         document.getElementById('carouselDots').style.display = 'none';
         noResults.style.display = 'block';
       } else {
-        // Show ALL results in grid layout (not carousel)
+        // Show ALL results in grid layout (no carousel, no auto-scroll)
         noResults.style.display = 'none';
         wrapper.style.display = '';
         document.getElementById('carouselDots').style.display = 'none';
@@ -191,6 +192,8 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
         track.style.flexWrap = 'wrap';
         track.style.gap = '15px';
         track.style.padding = '0';
+        track.style.transform = 'translateX(0px)';
+        currentPosition = 0;
         renderCarousel(matched);
         // Stop auto-scroll during search
         if (autoScrollInterval) clearInterval(autoScrollInterval);
