@@ -14,7 +14,7 @@ import requests, csv, random, json
 from io import StringIO
 from pathlib import Path
 
-OUTPUT_FILE = Path("outputs") / "carousel_dev.html"
+OUTPUT_FILE = Path("outputs") / "carousel_prod.html"
 CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRD0TXsFi9faOkOjDPVuvZj93bBhZE_gwA62TitZwlg--d7O0B7v8BCpkI6dr0d21SM6JsZeuwU7ine/pub?gid=252275152&single=true&output=csv"
 CARDS_PER_VISIT = 16
 
