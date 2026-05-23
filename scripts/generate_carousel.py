@@ -174,12 +174,14 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
         // Restore carousel mode when clearing search
         wrapper.style.display = '';
         document.getElementById('carouselDots').style.display = '';
-        document.querySelectorAll('.carousel-nav').forEach(btn => btn.style.display = '');
+        document.querySelectorAll('.carousel-nav').forEach(btn => btn.style.display = 'flex');
         track.style.display = 'flex';
         track.style.flexWrap = 'nowrap';
+        track.style.flexDirection = 'row';
         track.style.padding = '0 55px';
         track.style.overflow = 'hidden';
-        track.style.width = '100%';
+        track.style.width = 'auto';
+        track.style.maxWidth = '100%';
         noResults.style.display = 'none';
         isSearchMode = false;
         // Force re-render with fresh 16 random cards
@@ -209,10 +211,12 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
         document.querySelectorAll('.carousel-nav').forEach(btn => btn.style.display = 'none');
         track.style.display = 'flex';
         track.style.flexWrap = 'wrap';
+        track.style.flexDirection = 'row';
         track.style.gap = '15px';
         track.style.padding = '0';
         track.style.overflow = 'hidden';
         track.style.transform = 'translateX(0px)';
+        track.style.width = 'auto';
         currentPosition = 0;
         isSearchMode = true;
         renderCarousel(matched);
