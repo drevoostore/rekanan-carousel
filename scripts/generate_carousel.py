@@ -92,6 +92,18 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
     wrapper.addEventListener('mouseenter', () => { if (autoScrollInterval) clearInterval(autoScrollInterval); });
     wrapper.addEventListener('mouseleave', () => { resetAutoScroll(); });
   </script>
+  <script>
+    (function() {
+      function sendHeight() {
+        var h = document.documentElement.scrollHeight || document.body.scrollHeight;
+        if (h > 0) window.parent.postMessage({ height: h }, '*');
+      }
+      sendHeight();
+      window.addEventListener('resize', sendHeight);
+      setTimeout(sendHeight, 100);
+      setTimeout(sendHeight, 500);
+    })();
+  </script>
 </body>
 </html>
 """
