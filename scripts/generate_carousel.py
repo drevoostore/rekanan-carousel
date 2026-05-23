@@ -7,7 +7,7 @@ Features: Horizontal carousel, JS-randomized 16 cards per visit, auto-scroll, SE
 
 HOW TO SWITCH TO PROD ON DEV2:
   Edit line 18 below:
-    OUTPUT_FILE = Path("outputs") / "carousel_prod.html"
+OUTPUT_FILE = Path("outputs") / "carousel_dev.html"
 """
 
 import requests, csv, random, json
