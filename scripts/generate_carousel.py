@@ -156,7 +156,7 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
     function moveCarousel(direction) { const newPosition = currentPosition + (direction * visibleCards); currentPosition = Math.max(0, Math.min(newPosition, maxPosition)); updateCarousel(); resetAutoScroll(); }
     function goToSlide(slideIndex) { currentPosition = slideIndex * visibleCards; currentPosition = Math.min(currentPosition, maxPosition); updateCarousel(); resetAutoScroll(); }
     function updateCarousel() { track.style.transform = `translateX(-${currentPosition * (cardWidth + 15)}px)`; updateDots(); sendHeight(); }
-    function resetAutoScroll() { if (autoScrollInterval) clearInterval(autoScrollInterval); autoScrollInterval = setInterval(() => { console.log('AutoScroll tick:', currentPosition, 'max:', maxPosition); if (currentPosition >= maxPosition) currentPosition = 0; else currentPosition++; updateCarousel(); }, 1000); console.log('AutoScroll started, interval:', 1000); }
+    function resetAutoScroll() { if (autoScrollInterval) clearInterval(autoScrollInterval); autoScrollInterval = setInterval(() => { console.log('AutoScroll tick:', currentPosition, 'max:', maxPosition); if (currentPosition >= maxPosition) currentPosition = 0; else currentPosition++; updateCarousel(); }, 2000); console.log('AutoScroll started, interval:', 2000); }
     function filterCards(query) {
       const q = query.toLowerCase().trim();
       if (!q) {
