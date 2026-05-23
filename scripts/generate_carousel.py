@@ -65,8 +65,8 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
     .carousel-dot { width: 10px; height: 10px; border-radius: 50%; background: #ddd; cursor: pointer; transition: all 0.3s ease; }
     .carousel-dot.active { background: #4a90d9; width: 30px; border-radius: 5px; }
     .carousel-dot:hover { background: #357abd; }
-    @media (max-width: 768px) { .rekanan-card { min-height: 250px; padding: 16px; } .rekanan-card strong { font-size: 14px; } .carousel-nav { width: 36px; height: 36px; } .carousel-nav svg { width: 16px; height: 16px; } }
-    @media (max-width: 480px) { .rekanan-card { min-height: 240px; padding: 14px; } .header h1 { font-size: 22px; } .search-box { padding: 12px 16px 12px 40px; font-size: 14px; } }
+    @media (max-width: 768px) { .rekanan-card { min-height: 250px; padding: 16px; } .rekanan-card strong { font-size: 14px; } .rekanan-card .city-badge { font-size: 11px; padding: 3px 10px; } .rekanan-card .info-row { font-size: 13px; } .rekanan-card .address { font-size: 12px; } .carousel-nav { width: 36px; height: 36px; } .carousel-nav svg { width: 16px; height: 16px; } }
+    @media (max-width: 480px) { .carousel-track { padding: 0 40px; } .rekanan-card { min-height: 240px; padding: 14px; } .rekanan-card strong { font-size: 13px; } .rekanan-card .info-row { font-size: 12px; } .carousel-nav { width: 32px; height: 32px; } }
   </style>
 </head>
 <body>
@@ -96,12 +96,14 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
     function setCardSizes() {
       const ww = getWrapperWidth();
       let desired = 4;
-      if (ww < 500) desired = 2;
-      else if (ww < 800) desired = 3;
+      if (ww < 420) desired = 1;
+      else if (ww < 720) desired = 2;
+      else if (ww < 1000) desired = 3;
       const gap = 15;
-      const navSpace = 110;
+      const navSpace = desired === 1 ? 60 : 110;
       const available = ww - navSpace;
       cardWidth = Math.floor((available - (gap * (desired - 1))) / desired);
+      if (desired === 1) cardWidth = Math.min(cardWidth, available);
       visibleCards = desired;
       document.documentElement.style.setProperty('--card-width', cardWidth + 'px');
       maxPosition = Math.max(0, totalCards - visibleCards);
