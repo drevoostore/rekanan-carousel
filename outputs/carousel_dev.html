@@ -111,7 +111,7 @@
       updateDots();
       sendHeight();
     }
-    let currentPosition = 0; let cardWidth = 0; let visibleCards = 4; let totalCards = 16; let maxPosition = Math.max(0, totalCards - visibleCards); let autoScrollInterval = null; let isDragging = false; let startX = 0; let currentTranslate = 0; let prevTranslate = 0; let isSearchMode = false;
+    let currentPosition = 0; let cardWidth = 0; let visibleCards = 4; let totalCards = 16; let maxPosition = Math.max(0, totalCards - visibleCards); let autoScrollInterval = null; let isDragging = false; let startX = 0; let currentTranslate = 0; let prevTranslate = 0; let isSearchMode = false; let searchTotalCards = 0;
     const track = document.getElementById('carouselTrack'); const wrapper = document.getElementById('carouselWrapper'); const container = document.querySelector('.container'); const searchInput = document.getElementById('searchInput'); const noResults = document.getElementById('noResults');
     let allCards = Array.from(track.children);
     function getWrapperWidth() { return wrapper.clientWidth; }
@@ -135,7 +135,18 @@
     function moveCarousel(direction) { const newPosition = currentPosition + (direction * visibleCards); currentPosition = Math.max(0, Math.min(newPosition, maxPosition)); updateCarousel(); resetAutoScroll(); }
     function goToSlide(slideIndex) { currentPosition = slideIndex * visibleCards; currentPosition = Math.min(currentPosition, maxPosition); updateCarousel(); resetAutoScroll(); }
     function updateCarousel() { track.style.transform = `translateX(-${currentPosition * (cardWidth + 15)}px)`; updateDots(); sendHeight(); }
-    function resetAutoScroll() { if (autoScrollInterval) clearInterval(autoScrollInterval); autoScrollInterval = setInterval(() => { console.log('AutoScroll tick:', currentPosition, 'max:', maxPosition); if (currentPosition >= maxPosition) currentPosition = 0; else currentPosition++; updateCarousel(); }, 2000); console.log('AutoScroll started, interval:', 2000); }
+    function resetAutoScroll() {
+      if (autoScrollInterval) clearInterval(autoScrollInterval);
+      const totalToScroll = isSearchMode ? searchTotalCards : totalCards;
+      const searchMaxPosition = Math.max(0, totalToScroll - visibleCards);
+      autoScrollInterval = setInterval(() => {
+        console.log('AutoScroll tick:', currentPosition, 'max:', searchMaxPosition);
+        if (currentPosition >= searchMaxPosition) currentPosition = 0;
+        else currentPosition++;
+        updateCarousel();
+      }, 2000);
+      console.log('AutoScroll started, interval:', 2000, 'searchMode:', isSearchMode);
+    }
     function filterCards(query) {
       const q = query.toLowerCase().trim();
       if (!q) {
@@ -146,6 +157,8 @@
         track.style.display = 'flex';
         track.style.flexWrap = 'nowrap';
         track.style.padding = '0 55px';
+        track.style.overflow = 'hidden';
+        track.style.pointerEvents = 'auto';
         noResults.style.display = 'none';
         isSearchMode = false;
         renderCarousel();
@@ -163,7 +176,7 @@
         document.getElementById('carouselDots').style.display = 'none';
         noResults.style.display = 'block';
       } else {
-        // Show ALL results in grid layout (no carousel, no auto-scroll)
+        // Show ALL results in grid layout (no scroll, no autorotate, no drag)
         noResults.style.display = 'none';
         wrapper.style.display = '';
         document.getElementById('carouselDots').style.display = 'none';
@@ -172,19 +185,21 @@
         track.style.flexWrap = 'wrap';
         track.style.gap = '15px';
         track.style.padding = '0';
+        track.style.overflow = 'hidden';
         track.style.transform = 'translateX(0px)';
+        track.style.pointerEvents = 'none';
         currentPosition = 0;
         isSearchMode = true;
         renderCarousel(matched);
-        // Stop auto-scroll during search
+        // Stop and disable auto-scroll during search
         if (autoScrollInterval) clearInterval(autoScrollInterval);
         autoScrollInterval = null;
       }
     }
     track.addEventListener('mousedown', startDrag); track.addEventListener('touchstart', startDrag); track.addEventListener('mousemove', drag); track.addEventListener('touchmove', drag); track.addEventListener('mouseup', endDrag); track.addEventListener('touchend', endDrag); track.addEventListener('mouseleave', endDrag);
-    function startDrag(e) { isDragging = true; startX = getPositionX(e); track.classList.add('dragging'); if (autoScrollInterval) clearInterval(autoScrollInterval); }
-    function drag(e) { if (!isDragging) return; const currentX = getPositionX(e); const diff = currentX - startX; currentTranslate = prevTranslate + diff; track.style.transform = `translateX(${currentTranslate}px)`; }
-    function endDrag() { if (!isDragging) return; isDragging = false; track.classList.remove('dragging'); const movedBy = currentTranslate - prevTranslate; const slideWidth = cardWidth + 15; if (movedBy < -slideWidth/2) currentPosition += visibleCards; if (movedBy > slideWidth/2) currentPosition -= visibleCards; currentPosition = Math.max(0, Math.min(currentPosition, maxPosition)); prevTranslate = -currentPosition * slideWidth; currentTranslate = prevTranslate; updateCarousel(); resetAutoScroll(); }
+    function startDrag(e) { if (isSearchMode) return; isDragging = true; startX = getPositionX(e); track.classList.add('dragging'); if (autoScrollInterval) clearInterval(autoScrollInterval); }
+    function drag(e) { if (!isDragging || isSearchMode) return; const currentX = getPositionX(e); const diff = currentX - startX; currentTranslate = prevTranslate + diff; track.style.transform = `translateX(${currentTranslate}px)`; }
+    function endDrag() { if (isSearchMode) return; if (!isDragging) return; isDragging = false; track.classList.remove('dragging'); const movedBy = currentTranslate - prevTranslate; const slideWidth = cardWidth + 15; if (movedBy < -slideWidth/2) currentPosition += visibleCards; if (movedBy > slideWidth/2) currentPosition -= visibleCards; currentPosition = Math.max(0, Math.min(currentPosition, maxPosition)); prevTranslate = -currentPosition * slideWidth; currentTranslate = prevTranslate; updateCarousel(); resetAutoScroll(); }
     function getPositionX(e) { return e.type.includes('mouse') ? e.pageX : e.touches[0].clientX; }
     window.addEventListener('resize', () => { setCardSizes(); updateCarousel(); });
     console.log('Starting carousel...');
@@ -192,8 +207,8 @@
     console.log('After renderCarousel, calling resetAutoScroll...');
     resetAutoScroll();
     console.log('After resetAutoScroll, setting up mouse listeners...');
-    wrapper.addEventListener('mouseenter', () => { if (!isSearchMode && autoScrollInterval) clearInterval(autoScrollInterval); console.log('AutoScroll paused (mouseenter)'); });
-    wrapper.addEventListener('mouseleave', () => { if (!isSearchMode) resetAutoScroll(); console.log('AutoScroll resumed (mouseleave)'); });
+    wrapper.addEventListener('mouseenter', () => { if (isSearchMode) return; if (autoScrollInterval) clearInterval(autoScrollInterval); console.log('AutoScroll paused (mouseenter)'); });
+    wrapper.addEventListener('mouseleave', () => { if (isSearchMode) return; resetAutoScroll(); console.log('AutoScroll resumed (mouseleave)'); });
   </script>
   <script>
     (function() {
