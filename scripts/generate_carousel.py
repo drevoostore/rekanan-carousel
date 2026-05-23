@@ -19,7 +19,7 @@ from io import StringIO
 from pathlib import Path
 
 OUTPUT_FILE = Path("outputs") / "carousel_dev.html"
-CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQnV37JIH3rFESwe3HLDDo1m2SNMZcft6dJivj82kSDSlntZ_Gm7bwr25eFXqMhNQnynJuH3tdJVdvL/pub?gid=0&single=true&output=csv"
+CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRD0TXsFi9faOkOjDPVuvZj93bBhZE_gwA62TitZwlg--d7O0B7v8BCpkI6dr0d21SM6JsZeuwU7ine/pub?gid=252275152&single=true&output=csv"
 
 # ===== CAROUSEL HTML TEMPLATE =====
 CAROUSEL_HTML = r"""<!DOCTYPE html>
