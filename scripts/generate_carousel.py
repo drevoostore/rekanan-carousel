@@ -84,6 +84,19 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
     <div class="carousel-dots" id="carouselDots"></div>
   </div>
   <script>
+    (function() {
+      function sendHeight() {
+        var h = document.documentElement.scrollHeight || document.body.scrollHeight;
+        if (h > 0) window.parent.postMessage({ height: h }, '*');
+      }
+      window.sendHeight = sendHeight;
+      sendHeight();
+      window.addEventListener('resize', sendHeight);
+      setTimeout(sendHeight, 100);
+      setTimeout(sendHeight, 500);
+    })();
+  </script>
+  <script>
     const CARDS_PER_VISIT = 16;
     function renderCarousel(data) {
       const shuffled = allRekanans.slice().sort(() => Math.random() - 0.5);
