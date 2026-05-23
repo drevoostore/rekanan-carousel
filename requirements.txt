@@ -1,0 +1,16 @@
+# Shopify Rekanan Directory - Python Dependencies
+
+# Web server
+flask>=3.0.0
+
+# Google Sheets CSV import
+requests>=2.31.0
+
+# Excel file handling (optional, not used in CSV method)
+# openpyxl>=3.1.0
+# pandas>=2.0.0
+
+# Google Sheets API (optional, not needed for CSV method)
+# gspread>=5.11.0
+# google-auth>=2.23.0
+# google-auth-oauthlib>=1.1.0
