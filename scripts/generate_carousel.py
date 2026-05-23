@@ -143,7 +143,7 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
     function moveCarousel(direction) { const newPosition = currentPosition + (direction * visibleCards); currentPosition = Math.max(0, Math.min(newPosition, maxPosition)); updateCarousel(); resetAutoScroll(); }
     function goToSlide(slideIndex) { currentPosition = slideIndex * visibleCards; currentPosition = Math.min(currentPosition, maxPosition); updateCarousel(); resetAutoScroll(); }
     function updateCarousel() { track.style.transform = `translateX(-${currentPosition * (cardWidth + 15)}px)`; updateDots(); sendHeight(); }
-    function resetAutoScroll() { if (autoScrollInterval) clearInterval(autoScrollInterval); autoScrollInterval = setInterval(() => { if (currentPosition >= maxPosition) currentPosition = 0; else currentPosition++; updateCarousel(); }, 1000); }
+    function resetAutoScroll() { if (autoScrollInterval) clearInterval(autoScrollInterval); autoScrollInterval = setInterval(() => { console.log('AutoScroll tick:', currentPosition, 'max:', maxPosition); if (currentPosition >= maxPosition) currentPosition = 0; else currentPosition++; updateCarousel(); }, 1000); console.log('AutoScroll started, interval:', 1000); }
     function filterCards(query) {
       const q = query.toLowerCase().trim();
       if (!q) {
@@ -179,10 +179,13 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
     function endDrag() { if (!isDragging) return; isDragging = false; track.classList.remove('dragging'); const movedBy = currentTranslate - prevTranslate; const slideWidth = cardWidth + 15; if (movedBy < -slideWidth/2) currentPosition += visibleCards; if (movedBy > slideWidth/2) currentPosition -= visibleCards; currentPosition = Math.max(0, Math.min(currentPosition, maxPosition)); prevTranslate = -currentPosition * slideWidth; currentTranslate = prevTranslate; updateCarousel(); resetAutoScroll(); }
     function getPositionX(e) { return e.type.includes('mouse') ? e.pageX : e.touches[0].clientX; }
     window.addEventListener('resize', () => { setCardSizes(); updateCarousel(); });
+    console.log('Starting carousel...');
     renderCarousel();
+    console.log('After renderCarousel, calling resetAutoScroll...');
     resetAutoScroll();
-    wrapper.addEventListener('mouseenter', () => { if (autoScrollInterval) clearInterval(autoScrollInterval); });
-    wrapper.addEventListener('mouseleave', () => { resetAutoScroll(); });
+    console.log('After resetAutoScroll, setting up mouse listeners...');
+    wrapper.addEventListener('mouseenter', () => { if (autoScrollInterval) clearInterval(autoScrollInterval); console.log('AutoScroll paused (mouseenter)'); });
+    wrapper.addEventListener('mouseleave', () => { resetAutoScroll(); console.log('AutoScroll resumed (mouseleave)'); });
   </script>
   <script>
     (function() {
