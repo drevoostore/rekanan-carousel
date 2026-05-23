@@ -160,9 +160,12 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
     function filterCards(query) {
       const q = query.toLowerCase().trim();
       if (!q) {
-        // Restore original 16 random cards when clearing search
+        // Restore carousel mode when clearing search
         wrapper.style.display = '';
         document.getElementById('carouselDots').style.display = '';
+        document.querySelectorAll('.carousel-nav').forEach(btn => btn.style.display = '');
+        track.style.display = 'flex';
+        track.style.flexWrap = 'nowrap';
         noResults.style.display = 'none';
         renderCarousel();
         resetAutoScroll();
@@ -179,11 +182,19 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
         document.getElementById('carouselDots').style.display = 'none';
         noResults.style.display = 'block';
       } else {
-        wrapper.style.display = '';
-        document.getElementById('carouselDots').style.display = '';
+        // Show ALL results in grid layout (not carousel)
         noResults.style.display = 'none';
+        wrapper.style.display = '';
+        document.getElementById('carouselDots').style.display = 'none';
+        document.querySelectorAll('.carousel-nav').forEach(btn => btn.style.display = 'none');
+        track.style.display = 'flex';
+        track.style.flexWrap = 'wrap';
+        track.style.gap = '15px';
+        track.style.padding = '0';
         renderCarousel(matched);
-        resetAutoScroll();
+        // Stop auto-scroll during search
+        if (autoScrollInterval) clearInterval(autoScrollInterval);
+        autoScrollInterval = null;
       }
     }
     track.addEventListener('mousedown', startDrag); track.addEventListener('touchstart', startDrag); track.addEventListener('mousemove', drag); track.addEventListener('touchmove', drag); track.addEventListener('mouseup', endDrag); track.addEventListener('touchend', endDrag); track.addEventListener('mouseleave', endDrag);
