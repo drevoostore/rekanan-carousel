@@ -182,14 +182,45 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
         track.style.overflow = 'hidden';
         track.style.width = 'auto';
         track.style.maxWidth = '100%';
+        track.style.transform = 'translateX(0px)';
         noResults.style.display = 'none';
         isSearchMode = false;
-        // Force re-render with fresh 16 random cards
-        renderCarousel();
-        // Reset carousel position and recalculate
+        // Force complete re-render with fresh 16 random cards
+        const shuffled = allRekanans.slice().sort(() => Math.random() - 0.5);
+        const selected = shuffled.slice(0, CARDS_PER_VISIT);
+        track.innerHTML = selected.map(r => {
+          const kotaTitle = r.kota.charAt(0).toUpperCase() + r.kota.slice(1);
+          const igLink = r.instagram.replace(/^@/, '');
+          return `
+          <div class="rekanan-card" data-kota="${r.kota}" data-nama="${r.nama}">
+            <div class="card-content">
+              <span class="city-badge">📍 ${kotaTitle}</span>
+              <strong>${r.nama}</strong>
+              <div class="info-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect><circle cx="12" cy="12" r="5"></circle><circle cx="17" cy="7" r="1.5" fill="currentColor" stroke="none"></circle></svg>
+                <a href="https://instagram.com/${igLink}" target="_blank">${r.instagram}</a>
+              </div>
+              <div class="info-row">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                <span>${r.telp}</span>
+              </div>
+            </div>
+            <div class="address">📍 ${r.alamat}, ${r.kota}</div>
+          </div>
+        `}).join('');
+        allCards = Array.from(track.children);
+        totalCards = selected.length;
         currentPosition = 0;
+        prevTranslate = 0;
+        currentTranslate = 0;
+        // Force recalculate card sizes
         setCardSizes();
+        // Force reflow
+        void track.offsetWidth;
         updateCarousel();
+        initDots();
+        updateDots();
+        sendHeight();
         resetAutoScroll();
         return;
       }
