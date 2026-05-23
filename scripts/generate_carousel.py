@@ -39,34 +39,20 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
     .carousel-wrapper { position: relative; overflow: hidden; padding: 20px 0; }
     .carousel-track { display: flex; gap: 20px; transition: transform 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94); will-change: transform; }
     .carousel-track.dragging { transition: none; }
-    .rekanan-card { flex: 0 0 350px; background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); border: 2px solid #e8e8e8; border-radius: 12px; padding: 24px; transition: all 0.3s ease; cursor: pointer; position: relative; overflow: hidden; }
+    .rekanan-card { flex: 0 0 350px; min-height: 320px; display: flex; flex-direction: column; background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%); border: 2px solid #e8e8e8; border-radius: 12px; padding: 24px; transition: all 0.3s ease; cursor: pointer; position: relative; overflow: hidden; }
     .rekanan-card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: linear-gradient(180deg, #4a90d9 0%, #357abd 100%); opacity: 0; transition: opacity 0.3s ease; }
     .rekanan-card:hover { background: linear-gradient(135deg, #e8f4f8 0%, #f0f7fb 100%); box-shadow: 0 8px 24px rgba(74, 144, 217, 0.2); transform: translateY(-4px); border-color: #4a90d9; }
     .rekanan-card:hover::before { opacity: 1; }
     .rekanan-card strong { display: block; margin-bottom: 12px; color: #2c3e50; font-size: 18px; font-weight: 700; line-height: 1.4; }
+    .rekanan-card .card-content { flex: 1 1 auto; }
     .rekanan-card .city-badge { display: inline-block; padding: 4px 12px; background: linear-gradient(135deg, #4a90d9 0%, #357abd 100%); color: #fff; border-radius: 16px; font-size: 12px; font-weight: 600; margin-bottom: 12px; }
     .rekanan-card .info-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 14px; }
     .rekanan-card .info-row svg { width: 16px; height: 16px; flex-shrink: 0; }
     .rekanan-card a { color: #E1306C; text-decoration: none; font-weight: 500; transition: color 0.3s ease; }
     .rekanan-card a:hover { color: #C13584; text-decoration: underline; }
-    .rekanan-card .address { color: #666; font-size: 13px; line-height: 1.5; margin-top: 12px; padding-top: 12px; border-top: 1px solid #e8e8e8; }
-    .search-box-wrapper { max-width: 500px; margin: 0 auto 30px; position: relative; }
-    .search-box-wrapper svg { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); width: 20px; height: 20px; color: #999; pointer-events: none; }
-    .search-box { width: 100%; padding: 14px 18px 14px 46px; font-size: 15px; border: 2px solid #e8e8ef; border-radius: 30px; outline: none; transition: all 0.3s ease; font-family: inherit; background: #fff; }
-    .search-box:focus { border-color: #4a90d9; box-shadow: 0 4px 12px rgba(74, 144, 217, 0.15); }
-    .search-box::placeholder { color: #aaa; }
-    .no-results { text-align: center; padding: 60px 20px; color: #888; font-size: 16px; display: none; }
-    .no-results svg { width: 48px; height: 48px; margin-bottom: 16px; color: #ccc; }
-    .carousel-nav { position: absolute; top: 50%; transform: translateY(-50%); width: 44px; height: 44px; background: #fff; border: 2px solid #e8e8ef; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.3s ease; z-index: 10; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
-    .carousel-nav:hover { background: #4a90d9; border-color: #4a90d9; color: #fff; }
-    .carousel-nav.prev { left: 10px; } .carousel-nav.next { right: 10px; }
-    .carousel-nav svg { width: 20px; height: 20px; }
-    .carousel-dots { display: flex; justify-content: center; gap: 8px; margin-top: 20px; }
-    .carousel-dot { width: 10px; height: 10px; border-radius: 50%; background: #ddd; cursor: pointer; transition: all 0.3s ease; }
-    .carousel-dot.active { background: #4a90d9; width: 30px; border-radius: 5px; }
-    .carousel-dot:hover { background: #357abd; }
-    @media (max-width: 768px) { .rekanan-card { flex: 0 0 280px; padding: 20px; } .rekanan-card strong { font-size: 16px; } .carousel-nav { width: 36px; height: 36px; } .carousel-nav svg { width: 16px; height: 16px; } }
-    @media (max-width: 480px) { .rekanan-card { flex: 0 0 260px; } .header h1 { font-size: 22px; } .search-box { padding: 12px 16px 12px 40px; font-size: 14px; } }
+    .rekanan-card .address { color: #666; font-size: 13px; line-height: 1.5; margin-top: auto; padding-top: 12px; border-top: 1px solid #e8e8e8; flex-shrink: 0; }
+    @media (max-width: 768px) { .rekanan-card { flex: 0 0 280px; padding: 20px; min-height: 280px; } .rekanan-card strong { font-size: 16px; } .carousel-nav { width: 36px; height: 36px; } .carousel-nav svg { width: 16px; height: 16px; } }
+    @media (max-width: 480px) { .rekanan-card { flex: 0 0 260px; min-height: 260px; } .header h1 { font-size: 22px; } .search-box { padding: 12px 16px 12px 40px; font-size: 14px; } }
   </style>
 </head>
 <body>
@@ -155,15 +141,17 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
 """
 
 REKANAN_CARD_TEMPLATE = r"""        <div class="rekanan-card" data-kota="{kota}" data-nama="{nama}">
-          <span class="city-badge">📍 {city_title}</span>
-          <strong>{nama}</strong>
-          <div class="info-row">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-            <a href="https://instagram.com/{instagram_link}" target="_blank">{instagram}</a>
-          </div>
-          <div class="info-row">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
-            <span>{telp}</span>
+          <div class="card-content">
+            <span class="city-badge">📍 {city_title}</span>
+            <strong>{nama}</strong>
+            <div class="info-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+              <a href="https://instagram.com/{instagram_link}" target="_blank">{instagram}</a>
+            </div>
+            <div class="info-row">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+              <span>{telp}</span>
+            </div>
           </div>
           <div class="address">📍 {alamat}, {kota}</div>
         </div>
