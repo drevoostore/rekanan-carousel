@@ -116,6 +116,31 @@ We tested multiple configs and settled on **4 cards desktop**:
 
 **Test:** Open browser console — should see "AutoScroll tick" logs every 2 seconds. Search for a rekanan not in the initial 16 cards — it should appear.
 
+#### 11. Search Results — Grid Layout (All Results Shown) 📦
+**User request:** Search results should display ALL matching cards, not in carousel format.
+
+**Implementation:**
+- When search query entered:
+  - Hide carousel nav buttons & dots
+  - Change track from `flex-wrap: nowrap` (carousel) to `flex-wrap: wrap` (grid)
+  - Remove padding (no need for nav space)
+  - Render ALL matching cards from `allRekanans`
+  - Stop autorotate completely
+- When search cleared:
+  - Restore carousel nav & dots
+  - Change back to `flex-wrap: nowrap`
+  - Restore padding for nav buttons
+  - Show 16 random cards again
+  - Restart autorotate
+
+**Added `isSearchMode` flag:**
+- Tracks whether user is currently searching
+- Prevents mouseenter/mouseleave from triggering autorotate during search
+- Ensures clean state when switching between carousel and grid modes
+
+**Files modified:**
+- `scripts/generate_carousel.py` — Updated `filterCards()`, added `isSearchMode` flag, modified mouse event handlers
+
 ## Cloudflare Pages URL
 
 Dev (canonical, used in PageFly):
