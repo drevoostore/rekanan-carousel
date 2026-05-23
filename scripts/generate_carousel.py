@@ -11,7 +11,7 @@ USAGE:
   python3 scripts/generate_carousel.py --prod    # Generate prod only
 """
 
-import requests, csv, random, json, sys, argparse
+import requests, csv, random, json, sys, argparse, hashlib
 from io import StringIO
 from pathlib import Path
 
@@ -282,6 +282,28 @@ CAROUSEL_HTML = r"""<!DOCTYPE html>
 """
 
 
+def get_data_hash(rekanans):
+    """Generate hash from data for change detection"""
+    data_str = json.dumps(rekanans, sort_keys=True)
+    return hashlib.md5(data_str.encode()).hexdigest()
+
+
+def load_last_hash(output_path):
+    """Load last saved hash from file"""
+    hash_file = output_path.with_suffix('.hash')
+    if hash_file.exists():
+        with open(hash_file, 'r', encoding='utf-8') as f:
+            return f.read().strip()
+    return None
+
+
+def save_hash(output_path, hash_value):
+    """Save hash to file"""
+    hash_file = output_path.with_suffix('.hash')
+    with open(hash_file, 'w', encoding='utf-8') as f:
+        f.write(hash_value)
+
+
 def fetch_and_parse(csv_url):
     """Fetch CSV and parse data into JSON-ready dicts"""
     print(f"Fetching CSV from: {csv_url[:50]}...")
@@ -320,6 +342,7 @@ def main():
     parser = argparse.ArgumentParser(description='Generate carousel searchbox HTML')
     parser.add_argument('--dev', action='store_true', help='Generate dev only')
     parser.add_argument('--prod', action='store_true', help='Generate prod only')
+    parser.add_argument('--force', action='store_true', help='Force regenerate even if no changes')
     args = parser.parse_args()
     
     print("🎠 Generating Carousel Searchbox...")
@@ -328,15 +351,39 @@ def main():
         print("❌ No data found!")
         return 1
     
+    new_hash = get_data_hash(rekanans)
+    print(f"📊 Data hash: {new_hash[:16]}...")
+    
     # Determine which files to generate
+    outputs = []
     if args.dev and not args.prod:
-        generate_output(Path("outputs") / "carousel_dev.html", rekanans)
+        outputs.append(Path("outputs") / "carousel_dev.html")
     elif args.prod and not args.dev:
-        generate_output(Path("outputs") / "carousel_prod.html", rekanans)
+        outputs.append(Path("outputs") / "carousel_prod.html")
     else:
         # Default: generate both
-        generate_output(Path("outputs") / "carousel_dev.html", rekanans)
-        generate_output(Path("outputs") / "carousel_prod.html", rekanans)
+        outputs = [Path("outputs") / "carousel_dev.html", Path("outputs") / "carousel_prod.html"]
+    
+    generated = False
+    for output_path in outputs:
+        last_hash = load_last_hash(output_path)
+        
+        if not args.force and last_hash == new_hash:
+            print(f"⏭️  SKIP: {output_path.name} (no data changes)")
+            if output_path.exists():
+                from datetime import datetime
+                mtime = datetime.fromtimestamp(output_path.stat().st_mtime)
+                print(f"   Last update: {mtime.strftime('%Y-%m-%d %H:%M')}")
+            continue
+        
+        # Generate new HTML
+        generate_output(output_path, rekanans)
+        save_hash(output_path, new_hash)
+        generated = True
+    
+    if not generated:
+        print("✅ All outputs up-to-date (no regeneration needed)")
+        print("💡 Tip: Use --force to regenerate even if no changes")
     
     return 0
 
